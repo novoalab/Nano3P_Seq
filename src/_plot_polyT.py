@@ -45,9 +45,12 @@ def f5_type (f5handle):
 def main():
     df = pd.read_csv (sys.argv[1])
     print ('there are', df.shape[0],'reads')
-    df = df[(df['tail_length'] > 0) & (df['tail_is_valid'] ) ]
-    df.drop(columns=['read_type', 'tail_is_valid','file_path'], inplace=True)
-    print (df.shape[0], 'has valid tails')
+    print ('there are:')
+    readtypes = df['read_type'].value_counts().to_dict()
+    for i,j in readtypes.items():
+        print ( j, i, 'reads')
+    
+    df.drop(columns=['file_path'], inplace=True)
     indexes = df.index.to_numpy()
     f5 = get_fast5_file (sys.argv[2], mode='r')
     f5type = f5_type (f5)
@@ -66,24 +69,38 @@ def main():
         row = df.loc[i]
         readid = df.loc[i]['read_id']
         sigs = raw_from_f5 (f5, readid, f5type)
-        outpdf = "{}/{}.pdf".format(outdir, readid)
-        
-        try:
-
-            fig, ax = plt.subplots(figsize=(12,4))
-            start, end = row['tail_start'], row['tail_end']
-            ax.plot(sigs[:int(end)+4000], '-k')
-            seg = sigs[int(start):int(end)]
-            ax.plot(range(int(start), int(end)), seg, '-r')
-            title = "Poly(T) | Tail Length [nt]:{} | Tail start: {} | Tail end: {} | Sample per nt: {}".format(
-            row['tail_length'], row['tail_start'], row['tail_end'], row['samples_per_nt'])
-            ax.set( xlabel='Sample index', ylabel='pA')
-            fig.suptitle(title, fontsize=13)
-            plt.axis('tight')
-            fig.savefig(outpdf)
-            cnt += 1 
-        except:
-            print ("plot", readid, "failed!")
+        readtype = row['read_type']
+        validtail = row['tail_is_valid']
+        outpdf = "{}/{}.{}.pdf".format(outdir, readid, readtype)
+        if readtype != 'invalid' and validtail:        
+            try:
+                fig, ax = plt.subplots(figsize=(12,4))
+                start, end = row['tail_start'], row['tail_end']
+                ax.plot(sigs[:int(end)+4000], '-k')
+                seg = sigs[int(start):int(end)]
+                ax.plot(range(int(start), int(end)), seg, '-r')
+                title = "Poly(T) | Tail Length [nt]:{} | Tail start: {} | Tail end: {} | Sample per nt: {}".format(
+                row['tail_length'], row['tail_start'], row['tail_end'], row['samples_per_nt'])
+                ax.set( xlabel='Sample index', ylabel='pA')
+                fig.suptitle(title, fontsize=13)
+                plt.axis('tight')
+                fig.savefig(outpdf)
+                cnt += 1 
+            except:
+                print ("plot", readid, "failed!")
+        else:
+            try:
+                fig, ax = plt.subplots(figsize=(12,4))
+                ax.plot(sigs)
+                #title = "Poly(T) | Tail Length [nt]:{} | Tail start: {} | Tail end: {} | Sample per nt: {}".format(
+                #row['tail_length'], row['tail_start'], row['tail_end'], row['samples_per_nt'])
+                ax.set( xlabel='Sample index', ylabel='pA')
+                #fig.suptitle(title, fontsize=13)
+                plt.axis('tight')
+                fig.savefig(outpdf)
+                cnt += 1 
+            except:
+                print ("plot", readid, "failed!")
     print ('in the end', cnt, "reads were plotted!")
 if __name__ == '__main__':
     main()
