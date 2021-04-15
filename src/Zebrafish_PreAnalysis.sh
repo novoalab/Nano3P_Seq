@@ -64,23 +64,3 @@ awk '
 ' *.dir/*.csv > tails.csv
 
 
-
-####################################################
-## PART 3 : MAPPING     ############################
-####################################################
-ref=/users/enovoa/boguzhan/references/danio_rerio/zebrafish_11_rRNA_sequins.fa
-
-
-minimap2 -ax splice -k14 -uf --MD $ref cDNA8523612.fastq > cDNA8523612.bam
-
-
-samtools view -hSb -F 3844 cDNA8523612.bam >  cDNA8523612.sam
-
-
-samtools sort cDNA8523612.sam cDNA8523612.sorted && samtools index cDNA8523612.sorted.bam
-
-
-
-
-for i in *.sorted.bam;do samtools view -F 4 $i | cut -f1 | sort | uniq | wc -l;echo $i; done
-
