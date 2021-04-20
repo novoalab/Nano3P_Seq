@@ -88,7 +88,7 @@ filter_gene_types <- function(data) {
 	final <- vector()
 	for (type in unique(data$Gene_Type)) {
 		subs <- subset(data, Gene_Type == type)
-		if (nrow(subs) < 50) {
+		if (nrow(subs) < 150) {
 		subs$Gene_Type <- "Other"
 		} else {
 			subs$Gene_Type <- subs$Gene_Type 
@@ -103,7 +103,7 @@ data_tails_gene_type_processed <- filter_gene_types(data_tails)
 
 
 	dotplot <- function(data, label) {
-		pdf(file=paste(label, "Tails_All_Genes.pdf",sep="_"),height=10,width=20,onefile=FALSE)
+		pdf(file=paste(label, "Tails_All_Genes_min150.pdf",sep="_"),height=10,width=20,onefile=FALSE)
 			print(ggplot(data, aes(x=Gene_Type, y=tail_length)) + 
 				geom_quasirandom(varwidth = TRUE, aes(color=Gene_Type))+
 				geom_boxplot(aes(alpha=0), outlier.shape=NA)+
@@ -137,7 +137,7 @@ data_tails_gene_type_processed <- filter_gene_types(data_tails)
 		subs$Group <- subs$tail_length
 		subs$Group[which(subs$tail_length == 0)] <- "No_PolyA"
 		subs$Group[which(subs$tail_length < 10 & subs$tail_length  > 0)]<- "Small_PolyA"
-		subs$Group[which(subs$tail_length > 10 )]<- "Long_PolyA"
+		subs$Group[which(subs$tail_length >= 10 )]<- "Long_PolyA"
 		if (nrow(subs) > 20) {
 			final <- rbind(final, subs)
 			} else {
@@ -316,25 +316,25 @@ export_reads(data_per_gene_tails,"Zebrafish_pA")
 
 ### EXTRACT THE BAM FOR SMALL RNA READS
 java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=cDNA8523612.rRNA.sorted.bam \
-       O=cDNA8523612.rRNA.NoPolyA.bam\
+       I=cDNA8523612_nonrRNA.genome11_sequin.sorted.bam \
+       O=cDNA8523612.nonrRNA.NoPolyA.bam\
        READ_LIST_FILE=No_PolyA_Zebrafish_pA_read_id.tsv \
        FILTER=includeReadList
 
-samtools sort cDNA8523612.rRNA.NoPolyA.bam cDNA8523612.rRNA.NoPolyA.sorted
-samtools index cDNA8523612.rRNA.NoPolyA.sorted.bam
+samtools sort cDNA8523612.nonrRNA.NoPolyA.bam cDNA8523612.nonrRNA.NoPolyA.sorted
+samtools index cDNA8523612.nonrRNA.NoPolyA.sorted.bam
 
 
 
 
 java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=cDNA8523612.rRNA.sorted.bam \
-       O=cDNA8523612.rRNA.LongPolyA.bam\
+       I=cDNA8523612_nonrRNA.genome11_sequin.sorted.bam \
+       O=cDNA8523612.nonrRNA.LongPolyA.bam\
        READ_LIST_FILE=Long_PolyA_Zebrafish_pA_read_id.tsv \
        FILTER=includeReadList
 
-samtools sort cDNA8523612.rRNA.LongPolyA.bam cDNA8523612.rRNA.LongPolyA.sorted
-samtools index cDNA8523612.rRNA.LongPolyA.sorted.bam
+samtools sort cDNA8523612.nonrRNA.LongPolyA.bam cDNA8523612.nonrRNA.LongPolyA.sorted
+samtools index cDNA8523612.nonrRNA.LongPolyA.sorted.bam
 
 
 

@@ -30,21 +30,30 @@ cap.input <- read.delim("Capture.read_id", header=FALSE)
 ann <- manipulate_read_id(ann.input)
 cap <- manipulate_read_id(cap.input)
 
-manipulate_tail <- function(data) { 
-    data2 <- data[,c("read_id", "read_type", "tail_is_valid", "tail_length")]
-    data2$tail_length <- as.numeric(as.character(data2$tail_length))
-    data_filt <- subset(data2, tail_is_valid=="TRUE")
-    data_filt_T <- subset(data_filt, read_type=="polyT")
-    return(data_filt_T)
+
+
+
+manipulate_tail<- function(data) { 
+  data2 <- data
+  data2$tail_length <- as.numeric(as.character(data2$tail_length))
+  data2$tail_start <- as.numeric(as.character(data2$tail_start))
+  data2$tail_end <- as.numeric(as.character(data2$tail_end))
+  data2$samples_per_nt <- as.numeric(as.character(data2$samples_per_nt))
+  data2$samples_per_nt <- data2$samples_per_nt*1.2
+  data2$tail_length <- (data2$tail_end-data2$tail_start)/data2$samples_per_nt
+  data2[["tail_length"]][is.na(data2[["tail_length"]])] <- 0
+  data_filt <- subset(data2, tail_is_valid=="TRUE")
+  data_filt_T <- subset(data_filt, read_type=="polyT")
+  return(data_filt_T)
 }
 
 ann.tails_processed <- manipulate_tail(ann.tails)
 cap.tails_processed <- manipulate_tail(cap.tails)
 
 
+
 merge_tails <- function(read_data, tail_data, label) { 
     merged <- merge(read_data, tail_data, by.y=c("read_id"), by.x=c("Read_ID"))
-    merged[["tail_length"]][is.na(merged[["tail_length"]])] <- 0
     merged$Sample <- label
     return(merged)
 }

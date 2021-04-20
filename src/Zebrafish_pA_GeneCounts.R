@@ -29,6 +29,7 @@ gene_type_count <- function(data) {
 	gene_type_counts <- as.data.frame(table(data$Gene_Type))
 	colnames(gene_type_counts) <- c("Gene_Type", "Count")
 	gene_type_counts2 <- subset(gene_type_counts, Gene_Type != "synthetic")
+	gene_type_counts2 <- subset(gene_type_counts, Gene_Type != "ensembl_havana")
 	gene_type_counts2 <- subset(gene_type_counts2, Count >0)
 	gene_type_counts_major <- subset(gene_type_counts2, Count >200)
 	gene_type_counts_major$Category_New  <-  gene_type_counts_major$Gene_Type
@@ -60,6 +61,7 @@ gene_type_pie_chart <- function(data) {
 	gene_type_counts <- as.data.frame(table(data$Gene_Type))
 	colnames(gene_type_counts) <- c("Gene_Type", "Count")
 	gene_type_counts_withoutsequin <- subset(gene_type_counts, Gene_Type != "synthetic")
+		gene_type_counts_withoutsequin <- subset(gene_type_counts, Gene_Type != "ensembl_havana")
 	gene_type_major <- subset(gene_type_counts_withoutsequin, Count > 200)
 	gene_type_major$Category_New <- gene_type_major$Gene_Type
 	gene_type_major$Gene_Type <- NULL

@@ -1,5 +1,5 @@
 ##################################################
-### PRE-ANALYSIS OF THE pA Selected Zebrafish Run ###
+### PRE-ANALYSIS OF THE Ribodepleted Zebrafish Run ###
 ###################################################
 ########## OGUZHAN BEGIK APRIL 2020 ###############
 
@@ -9,13 +9,21 @@
 
 # BASECALLING USING GUPPY 3.6.1
 guppy_3_6_1=/users/enovoa/lpryszcz/src/ont-guppy_3.6.1/bin/guppy_basecaller
-input=/no_backup_isis/enovoa/data/ont/template_switching/cDNA852361_2_Zebrafish_pA_TGIRT_Flongle
-output=/users/enovoa/boguzhan/NanoCapture/cDNA852361_2_Zebrafish_pA_TGIRT_Flongle
-$guppy_3_6_1 --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg  --fast5_out -ri $input -s $output
+input=/no_backup_isis/enovoa/data/ont/template_switching/cDNA786327/cDNA786327/20210414_1404_MN22127_FAP79842_196b9868/fast5/
+output=/users/enovoa/boguzhan/NanoCapture/cDNA786327_Zebrafish_Ribodepleted_TGIRT_MINION/
+$guppy_3_6_1 --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg  --fast5_out -ri $input -s $output --barcode_kits EXP-NBD104 --trim_strategy none
+#Submit the job
+qsub -cwd basecalling.sh -q gpu
+
+# Merge the fastq files in the folders
+for d in barcode* unclassified; do echo $d; cat $d/*.fastq > $d.fastq; done
 
 #Count how many reads are mapped
 wc -l *fastq | awk '{x=$1/4; print x; print $2}'
 # Run porechop for the unclassified
+
+porechop -i unclassified.fastq -b porechop_50 --barcode_threshold 50 --untrimmed 
+
 
 
 ####################################################
