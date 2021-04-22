@@ -383,9 +383,6 @@ dev.off()
 
 
 
-
-
-
 #### CHECKING THE RIBOSOMAL RNAS
 ##1 . OVERALL TAIL LENGTH DISTRIBUTION 
 	ribodep_all_rRNA <- subset(ribodep_all, Gene_Name=="18s_Maternal" | Gene_Name=="28s_Maternal"| Gene_Name=="ENSDARG00000080337" | Gene_Name=="ENSDARG00000082753" )
@@ -404,6 +401,116 @@ pdf(file="Tails_Ribodepleted_Timepoints_rRNA.pdf",height=20,width=10,onefile=FAL
     		legend.title = element_text(size = 20),
     		legend.text = element_text(color = "black", size=15)))
 dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###### CHECK THE SHORT/LONG RATIO PER GENE
+
+
+
+
+count_polyA_population <- function(data) {
+data<- subset(data, Gene_Count >10)
+data$Tail_Class <- data$tail_length
+data$Tail_Class[which(data$tail_length == 0)] <- "No_PolyA"
+data$Tail_Class[which(data$tail_length < 10 & data$tail_length  > 0)]<- "Small_PolyA"
+data$Tail_Class[which(data$tail_length >= 10 )]<- "PolyA"
+final <- vector()
+pre <- vector()
+for (gene in unique(data$Gene_Name)) {
+	subs <- subset(data, Gene_Name==gene)
+	sub_table <- table(subs$Tail_Class)
+	pre$gene <- gene
+	pre <- as.data.frame(pre)
+	pre$PolyA_Count <- as.numeric(sub_table["PolyA"])
+	pre$No_PolyA_Count <- as.numeric(sub_table["No_PolyA"])
+	final<- rbind(final,pre)
+}
+
+final[["PolyA_Count"]][is.na(final[["PolyA_Count"]])] <- 0
+final[["No_PolyA_Count"]][is.na(final[["No_PolyA_Count"]])] <- 0
+final$Total <- final$PolyA_Count + final$No_PolyA_Count
+final$Ratio_PolyA <- final$PolyA_Count /final$Total
+final$Ratio_NoPolyA<- final$No_PolyA_Count /final$Total
+merged <- merge(data, final, by.x="Gene_Name", by.y="gene")
+	return(merged)
+}
+
+ribodep_hpf2.tail_class_count <- count_polyA_population(ribodep_hpf2.reshape)
+ribodep_hpf4.tail_class_count <- count_polyA_population(ribodep_hpf4.reshape)
+ribodep_hpf6.tail_class_count <- count_polyA_population(ribodep_hpf6.reshape)
+
+
+
+
+
+
+
+#Scatter plot with different hours 
+ribodep_hpf2.tail_class_count_unique <-ribodep_hpf2.tail_class_count[!duplicated(ribodep_hpf2.tail_class_count[c("Gene_Name", "Sample")]),]
+ribodep_hpf4.tail_class_count_unique <-ribodep_hpf4.tail_class_count[!duplicated(ribodep_hpf4.tail_class_count[c("Gene_Name", "Sample")]),]
+
+
+columns <- c("Gene_Name", "Gene_Type", "Gene_Count", "Ratio_PolyA", "Ratio_NoPolyA")
+merged_2_4_hours <-  merge(ribodep_hpf2.tail_class_count_unique[,columns], ribodep_hpf4.tail_class_count_unique[,columns], by.x=c("Gene_Name", "Gene_Type"),  by.y=c("Gene_Name", "Gene_Type"))
+
+merged_2_4_hours_mRNA <- subset(merged_2_4_hours, Gene_Type=="protein_coding")
+merged_2_4_hours_mRNA$Change <- abs(merged_2_4_hours_mRNA$Ratio_PolyA.x-merged_2_4_hours_mRNA$Ratio_PolyA.y)
+
+scatter_plot <- function(data,label1, label2){
+	pdf(file=paste(label1,label2, "PolyA_Ratio_Scatter_Plot_mRNAs.pdf", sep="_"),height=5,width=8,onefile=FALSE)
+	print(ggplot(data, aes(x=Ratio_PolyA.x, y=Ratio_PolyA.y, colour=Change)) +
+			geom_point(size=1)+
+			geom_abline(slope=1, intercept=0,linetype="dashed", size=0.2, color= "black")+
+			#geom_text_repel(data=subset(data, Change>0.5), aes(label=Gene_Name), colour="black",segment.size  = 0.4,segment.color = "grey50",size=5)+
+			xlim(0,1)+
+			ylim(0,1)+
+			xlab(paste(label1, "Long PolyA Fraction"))+
+			ylab(paste(label2,  "Long PolyA Fraction")) +
+			theme_bw()+
+			theme(axis.text.x = element_text(face="bold", color="black",size=11),
+				 axis.text.y = element_text(face="bold", color="black", size=11),
+			plot.title = element_text(color="black", size=24, face="bold.italic",hjust = 0.5),
+			axis.title.x = element_text(color="black", size=15, face="bold"),
+			axis.title.y = element_text(color="black", size=15, face="bold"),
+			panel.background = element_blank(),
+			axis.line = element_line(colour = "black", size=0.5),
+			legend.title = element_text(color = "black", size = 20,face="bold"),
+			legend.text = element_text(color = "black", size=20)))
+dev.off()
+}
+
+scatter_plot(merged_2_4_hours_mRNA, "2HPF", "4HPF")
+
+
+
+
+
+
+
+
 
 
 
