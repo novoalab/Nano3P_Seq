@@ -68,16 +68,18 @@ cap.merged <- merge_tails(cap, cap.tails_processed, "Capture")
 both_merged <- rbind(ann.merged, cap.merged)
 both_merged$Unique <- paste(both_merged$Gene_Name, both_merged$Sample, sep="_")
 
-
+colors <- c("#78c4d4", "#eeb76b")
 
 
         pdf(file="AnnealingVSCapture_Tails.pdf",height=4,width=10,onefile=FALSE)
             print(ggplot(both_merged, aes(x=Unique, y=tail_length)) + 
                 geom_quasirandom(varwidth = TRUE, aes(color=Group))+
                 geom_boxplot(aes(alpha=0), outlier.shape=NA)+
+                scale_color_manual(values=colors)+
                 stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
                     geom = "crossbar", width = 0.7, color="#c06c84")+
                 theme_bw()+
+                stat_n_text() + 
                 xlab("Group")+
                 ylab("Tail length") +
                 theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
@@ -91,10 +93,9 @@ both_merged$Unique <- paste(both_merged$Gene_Name, both_merged$Sample, sep="_")
             print(ggplot(both_merged, aes(x = Unique, y = tail_length )) + 
               geom_boxplot(aes(fill = Sample),position = position_dodge(0.9), outlier.shape=NA ) +
               stat_n_text() + 
+              scale_fill_manual(values=colors)+
               coord_cartesian(ylim = c(0,175))+
-              theme_bw()+
-              scale_fill_manual(values = c("#999999", "#E69F00"))
-              )
+              theme_bw())
          dev.off()
 
             

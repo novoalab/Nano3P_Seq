@@ -1,5 +1,5 @@
 ##################################################
-### ANALYSIS OF THE pA Selected Zebrafish Run 4hpf REP1###
+### ANALYSIS OF THE pA Selected Zebrafish Run 4hpf REP2###
 ###################################################
 ########## OGUZHAN BEGIK APRIL 2020 ###############
 
@@ -11,7 +11,7 @@
 ```bash
 ref=/users/enovoa/boguzhan/references/danio_rerio/rRNA_Maternal_Zygotic.fa
 
-minimap2 -ax map-ont --MD $ref cDNA786327_4hpf.fastq | samtools view -hSb -F 3844 - >  4hpf.rRNA.sam
+minimap2 -ax map-ont --MD $ref cDNA123791_4hpf.fastq | samtools view -hSb -F 3844 - >  4hpf.rRNA.sam
 samtools view  -f 0x10 -bq 59 4hpf.rRNA.sam | samtools sort - 4hpf.rRNA.sorted && samtools index 4hpf.rRNA.sorted.bam
 
 
@@ -42,7 +42,7 @@ samtools index 4hpf.rRNA.overlapping.sorted.bam
 samtools view 4hpf.rRNA.sorted.bam | cut -f1 > 4hpf.rRNA.reads
 
 # Excluded fastq
-seqkit grep --pattern-file 4hpf.rRNA.reads --invert-match cDNA786327_4hpf.fastq > 4hpf_nonrRNA.fastq
+seqkit grep --pattern-file 4hpf.rRNA.reads --invert-match cDNA123791_4hpf.fastq > 4hpf_nonrRNA.fastq
 
 
 

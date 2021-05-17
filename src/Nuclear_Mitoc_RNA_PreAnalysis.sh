@@ -16,7 +16,7 @@ $guppy_3_6_1 --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg  --fast5_out -ri $inpu
 qsub -cwd basecalling.sh -q gpu
 
 # Merge the fastq files in the folders
-for d in barcode* unclassified; do echo $d; cat $d/*.fastq.gz > $d.fq.gz; done
+for d in barcode* unclassified; do echo $d; cat $d/*.fastq > $d.fq; done
 
 #Count how many reads are mapped
 wc -l *fastq | awk '{x=$1/4; print x; print $2}'
@@ -90,17 +90,27 @@ ref=/users/enovoa/boguzhan/references/mouse_with_sequins/Mus_musculus.GRCm38.dna
 
 
 minimap2 -ax splice -k14 -uf --MD $ref cDNA964321_all.fastq > cDNA964321_all_genome38_sequin_rrna.bam
+minimap2 -ax splice -k14 -uf --MD $ref mouse_rep1.fastq > mouse_rep1.bam
+minimap2 -ax splice -k14 -uf --MD $ref mouse_rep2.fastq > mouse_rep2.bam
 
 
 samtools view -hSb -F 3844 cDNA964321_all_genome38_sequin_rrna.bam >  cDNA964321_all_genome38_sequin_rrna.sam
+samtools view -hSb -F 3844 mouse_rep1.bam >  mouse_rep1.sam
+samtools view -hSb -F 3844 mouse_rep2.bam >  mouse_rep2.sam
 
 
 samtools sort cDNA964321_all_genome38_sequin_rrna.sam cDNA964321_all_genome38_sequin_rrna.sorted && samtools index cDNA964321_all_genome38_sequin_rrna.sorted.bam
+samtools sort mouse_rep1.sam mouse_rep1.sorted && samtools index mouse_rep1.sorted.bam
+samtools sort mouse_rep2.sam mouse_rep2.sorted && samtools index mouse_rep2.sorted.bam
 
 
 
 
 for i in *.sorted.bam;do samtools view -F 4 $i | cut -f1 | sort | uniq | wc -l;echo $i; done
+
+
+
+
 
 
 

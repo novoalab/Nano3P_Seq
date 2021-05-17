@@ -45,6 +45,7 @@ zebrafish.data <- read.delim("cDNA786327_6hpf.genome11_sequin_ALLRNAs_Merged.bed
 
 
 
+
 # Reshape the tables and remove low quality reads
 reshape<- function(data,tails,label) {
 	data2 <- data[,c("V1", "V4", "V5", "V6", "V16", "V17")]
@@ -61,17 +62,18 @@ reshape<- function(data,tails,label) {
 	merged2 <- merge(merged, ourdata2, by.x=c("Gene_Name"), by.y=c("Gene_Name"))
 	merged2$Gene_Count_Norm <- merged2$Gene_Count/coverage *10000
 	merged2$Sample <- label
+	merged3 <-  merged2[!duplicated(merged2[c("Gene_Name")]),]
 	#Create a category
-	gene_type_sum <- aggregate(.~Gene_Type, merged2[,c("Gene_Type", "Gene_Count_Norm")], sum)
-	gene_type_major <- subset(gene_type_sum, Gene_Count_Norm > 250)
+	gene_type_sum <- aggregate(.~Gene_Type, merged3[,c("Gene_Type", "Gene_Count_Norm")], sum)
+	gene_type_major <- subset(gene_type_sum, Gene_Count_Norm > 5.5)
 	gene_type_major$Category <- gene_type_major$Gene_Type
-	gene_type_minor <- subset(gene_type_sum, Gene_Count_Norm < 250)
+	gene_type_minor <- subset(gene_type_sum, Gene_Count_Norm < 5.5)
 	gene_type_minor$Category <- "Other"
 	gene_type <- rbind(gene_type_major, gene_type_minor)
 	colnames(gene_type) <- c("Gene_Type", "Gene_Type_Count_Norm", "Category")
 	#MErge
-	merged3 <- merge(merged2, gene_type, by.x="Gene_Type", by.y="Gene_Type")
-	return(merged3)
+	merged4 <- merge(merged2, gene_type, by.x="Gene_Type", by.y="Gene_Type")
+	return(merged4)
 }
 
 
@@ -90,12 +92,13 @@ all_species <- rbind(yeast.mrna,mouse.mrna,zebrafish.mrna)
 ##Overall Tail comparison (Single transcript)
 tail_comparison_overall <- function(data, label) {
 	median_lengths <- aggregate(.~Sample, data[,c("Sample", "tail_length")], median)
-	pdf(file=paste(label, "Overall_Tail_Comparison_Single_Transcript.pdf",sep="_"),height=4,width=6,onefile=FALSE)
+	print(median_lengths)
+	pdf(file=paste(label, "Overall_Tail_Comparison_Single_Transcript.pdf",sep="_"),height=3,width=5, onefile=FALSE)
 	print(ggplot(data, aes(x=tail_length, color=Sample)) +
 		geom_density()+
-		geom_vline(data=median_lengths, aes(xintercept=tail_length, color=Sample),
-             linetype="dashed")+
-		geom_text(data=median_lengths, aes(y=0.05, label=tail_length))+
+		#geom_vline(data=median_lengths, aes(xintercept=tail_length, color=Sample),
+            # linetype="dashed")+
+		#geom_text(data=median_lengths, aes(y=0, label=as.numeric(as.character(tail_length))))+
   		theme_bw()+
 		xlab("PolyA Tail Length")+
         ylab("Density"))
@@ -113,10 +116,15 @@ tail_comparison_overall(all_species, "Cross_Species")
 ## Tail comparison median per gene
 tail_comparison_median_per_gene_protein<- function(data, label) {
 	data <-  data[!duplicated(data[c("Gene_Name", "Sample")]),]
-	pdf(file=paste(label, "Median_Tail_Per_Gene_Comparison_mRNA.pdf",sep="_"),height=6,width=10,onefile=FALSE)
+	median_lengths <- aggregate(.~Sample, data[,c("Sample", "Median_Length")], median)
+	print(median_lengths)
+	pdf(file=paste(label, "Median_Tail_Per_Gene_Comparison_mRNA.pdf",sep="_"),height=3,width=5,onefile=FALSE)
 	print(ggplot(data, aes(x=Median_Length, color=Sample)) +
 		geom_density()+
   		theme_bw()+
+  		#geom_vline(data=median_lengths, aes(xintercept=tail_length, color=Sample),
+        #     linetype="dashed")+
+		#geom_text(data=median_lengths, aes(y=0, label=tail_length))+
   		xlab("Median Tail Length")+
         ylab("Density"))
   		#oord_cartesian(xlim=c(-10, 200))

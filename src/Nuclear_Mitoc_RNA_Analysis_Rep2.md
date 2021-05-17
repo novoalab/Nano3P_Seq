@@ -152,13 +152,12 @@ bedtools bamtobed -i cDNA964321_all.genome38_sequin_rRNA.restoverlap.sorted.bam 
 #cDNA964321_all.genome38_sequin_smallRNAs.reads : Contains smallRNA TRANSCRIPT START intersected reads
 #cDNA964321_all.genome38_sequin.restRNAs.overlapping.reads : Contains rest RNA TRANSCRIPT START intersected reads
 
-awk '!seen[$4]++' cDNA964321_all.genome38_sequin_rrna.restRNAs.sorted.bed | cut -f4 > cDNA964321_all.genome38_sequin_rRNA.restRNAs.reads
 
 # We need to remove the reads from miRNAs that are overlapping with smallRNAs or restRNAs
-diff cDNA964321_all.genome38_sequin_rRNA.restRNAs.reads cDNA964321_all_genome38_sequin_rrna_overlapping_miRNAs.reads |grep ">"|cut -c 3- > cDNA964321_all.genome38_sequin_rRNA_overlapping_miRNAs_RestExcluded.reads
+diff cDNA964321_all.genome38_sequin_rRNA.restRNAs.overlapping.reads cDNA964321_all_genome38_sequin_rrna_overlapping_miRNAs.reads |grep ">"|cut -c 3- > cDNA964321_all.genome38_sequin_rRNA_overlapping_miRNAs_RestExcluded.reads
 
 
-diff cDNA964321_all.genome38_sequin_smallRNAs.reads cDNA964321_all.genome38_sequin_rRNA_overlapping_miRNAs_RestExcluded.reads |grep ">"|cut -c 3- > cDNA964321_all.genome38_sequin_rRNAoverlapping_miRNAs_RestSmallExcluded.reads
+diff cDNA964321_all.genome38_sequin_smallRNAs.reads cDNA964321_all_genome38_sequin_rrna_overlapping_miRNAs.reads |grep ">"|cut -c 3- > cDNA964321_all.genome38_sequin_rRNAoverlapping_miRNAs_RestSmallExcluded.reads
 
 
 # Now we processed the miRNA reads file, exluding overlaps with genes

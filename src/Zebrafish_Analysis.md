@@ -13,7 +13,9 @@ library(dplyr)
 library(ggridges)
 
 #Import tail
-ribodepleted.tails <- read.delim("cDNA786327_tails.csv", sep=",")
+ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
+ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
+
 polyA.tails <- read.delim("cDNA8523612_tails.csv", sep=",")
 
 
@@ -32,7 +34,9 @@ manipulate_tail_<- function(data) {
   return(data_filt_T)
 }
 
-ribodepleted.tails_processed <- manipulate_tail_(ribodepleted.tails)
+ribodepleted_rep1.tails_processed <- manipulate_tail_(ribodepleted_rep1.tails)
+ribodepleted_rep2.tails_processed <- manipulate_tail_(ribodepleted_rep2.tails)
+
 polyA.tails_processed <- manipulate_tail_(polyA.tails)
 
 
@@ -43,12 +47,19 @@ polyA.tails_processed <- manipulate_tail_(polyA.tails)
 
 # Import the data
 #RIBODEPLETED DATA
-ribodep_hpf2.data <- read.delim("2hpf.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
-ribodep_hpf4.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
-ribodep_hpf6.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
+ribodep_hpf2_rep1.data <- read.delim("cDNA964321_all.genome38_sequin_rRNA_ALLRNAs_Merged.bed", header=FALSE)
+ribodep_hpf4_rep1.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
+ribodep_hpf6_rep1.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
+
+ribodep_hpf2_rep2.data <- read.delim("2hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+ribodep_hpf4_rep2.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+ribodep_hpf6_rep2.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+
 
 #POLYA SELECTED
 polyA_hpf4.data <- read.delim("4hpf_pAselected.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
+
+
 
 
 
@@ -68,27 +79,34 @@ reshape<- function(data,tails,label) {
 	merged2 <- merge(merged, ourdata2, by.x=c("Gene_Name"), by.y=c("Gene_Name"))
 	merged2$Gene_Count_Norm <- merged2$Gene_Count/coverage *10000
 	merged2$Sample <- label
+	merged3 <-  merged2[!duplicated(merged2[c("Gene_Name")]),]
 	#Create a category
-	gene_type_sum <- aggregate(.~Gene_Type, merged2[,c("Gene_Type", "Gene_Count_Norm")], sum)
-	gene_type_major <- subset(gene_type_sum, Gene_Count_Norm > 250)
+	gene_type_sum <- aggregate(.~Gene_Type, merged3[,c("Gene_Type", "Gene_Count_Norm")], sum)
+	gene_type_major <- subset(gene_type_sum, Gene_Count_Norm > 5.5)
 	gene_type_major$Category <- gene_type_major$Gene_Type
-	gene_type_minor <- subset(gene_type_sum, Gene_Count_Norm < 250)
+	gene_type_minor <- subset(gene_type_sum, Gene_Count_Norm < 5.5)
 	gene_type_minor$Category <- "Other"
 	gene_type <- rbind(gene_type_major, gene_type_minor)
 	colnames(gene_type) <- c("Gene_Type", "Gene_Type_Count_Norm", "Category")
 	#MErge
-	merged3 <- merge(merged2, gene_type, by.x="Gene_Type", by.y="Gene_Type")
-	return(merged3)
+	merged4 <- merge(merged3, gene_type, by.x="Gene_Type", by.y="Gene_Type")
+	return(merged4)
 }
 
 
 
 
 
+ribodep_hpf2_rep1.reshape <- reshape(ribodep_hpf2_rep1.data,ribodepleted_rep1.tails_processed,"Ribodep_2hpf_rep1")
+ribodep_hpf4_rep1.reshape <- reshape(ribodep_hpf4_rep1.data,ribodepleted_rep1.tails_processed,"Ribodep_4hpf_rep1")
+ribodep_hpf6_rep1.reshape <- reshape(ribodep_hpf6_rep1.data,ribodepleted_rep1.tails_processed,"Ribodep_6hpf_rep1")
 
-ribodep_hpf2.reshape <- reshape(ribodep_hpf2.data,ribodepleted.tails_processed,"Ribodep_2hpf")
-ribodep_hpf4.reshape <- reshape(ribodep_hpf4.data,ribodepleted.tails_processed,"Ribodep_4hpf")
-ribodep_hpf6.reshape <- reshape(ribodep_hpf6.data,ribodepleted.tails_processed,"Ribodep_6hpf")
+
+
+ribodep_hpf2_rep2.reshape <- reshape(ribodep_hpf2_rep2.data,ribodepleted_rep2.tails_processed,"Ribodep_2hpf_rep2")
+ribodep_hpf4_rep2.reshape <- reshape(ribodep_hpf4_rep2.data,ribodepleted_rep2.tails_processed,"Ribodep_4hpf_rep2")
+ribodep_hpf6_rep2.reshape <- reshape(ribodep_hpf6_rep2.data,ribodepleted_rep2.tails_processed,"Ribodep_6hpf_rep2")
+
 
 polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf")
 
@@ -96,9 +114,21 @@ polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf"
 
 
 
-polyA_vs_ribodep_4hpf <- rbind(ribodep_hpf4.reshape,polyA_hpf4.reshape)
+polyA_vs_ribodep_4hpf <- rbind(ribodep_hpf4_rep1.reshape,polyA_hpf4.reshape)
 
-ribodep_all <- rbind(ribodep_hpf2.reshape, ribodep_hpf4.reshape, ribodep_hpf6.reshape)
+ribodep_rep1_all <- rbind(ribodep_hpf2_rep1.reshape, ribodep_hpf4_rep1.reshape, ribodep_hpf6_rep1.reshape)
+ribodep_rep2_all <- rbind(ribodep_hpf2_rep2.reshape, ribodep_hpf4_rep2.reshape, ribodep_hpf6_rep2.reshape)
+
+ribodep_hpf2_replicability <- rbind(ribodep_hpf2_rep1.reshape,ribodep_hpf2_rep2.reshape) 
+ribodep_hpf4_replicability <- rbind(ribodep_hpf4_rep1.reshape,ribodep_hpf4_rep2.reshape) 
+ribodep_hpf6_replicability <- rbind(ribodep_hpf6_rep1.reshape,ribodep_hpf6_rep2.reshape) 
+
+
+ribodep_rep1_all$Rep <- "Rep1"
+ribodep_rep2_all$Rep <- "Rep2"
+
+ribodep_rep1_rep2_all <- rbind(ribodep_rep1_all,ribodep_rep2_all)
+
 
 
 
@@ -118,7 +148,12 @@ simple_barplot_grouped <- function(data, label){
 
 
 simple_barplot_grouped(polyA_vs_ribodep_4hpf, "PolyA_vs_Ribodep_4HPF")
-simple_barplot_grouped(ribodep_all, "Ribodepletion_All_Timepoints")
+simple_barplot_grouped(ribodep_rep1_all, "Ribodepletion_All_Timepoints_rep1")
+simple_barplot_grouped(ribodep_rep2_all, "Ribodepletion_All_Timepoints_rep2")
+
+simple_barplot_grouped(ribodep_hpf2_replicability, "Ribodepletion_2hpf_Replicability")
+simple_barplot_grouped(ribodep_hpf4_replicability, "Ribodepletion_4hpf_Replicability")
+simple_barplot_grouped(ribodep_hpf6_replicability, "Ribodepletion_6hpf_Replicability")
 
 
 
@@ -137,7 +172,35 @@ tail_comparison_overall <- function(data, label) {
 
 
 tail_comparison_overall(polyA_vs_ribodep_4hpf, "PolyA_vs_Ribodep_4HPF")
-tail_comparison_overall(ribodep_all, "Ribodepletion_All_Timepoints")
+tail_comparison_overall(ribodep_rep1_all, "Ribodepletion_All_Timepoints_rep1")
+tail_comparison_overall(ribodep_rep2_all, "Ribodepletion_All_Timepoints_rep2")
+
+tail_comparison_overall(ribodep_hpf2_replicability, "Ribodepletion_2hpf_Replicability")
+tail_comparison_overall(ribodep_hpf4_replicability, "Ribodepletion_4hpf_Replicability")
+tail_comparison_overall(ribodep_hpf6_replicability, "Ribodepletion_6hpf_Replicability")
+
+
+##Overall Tail comparison (Single transcript) Both Rep1 and Rep2 
+tail_comparison_overall_rep_merged<- function(data, label) {
+	data2 <- subset(data, Gene_Type=="lincRNA"|Gene_Type=="Mt_rRNA"|Gene_Type=="protein_coding"|Gene_Type=="rRNA" )
+	data2$Timepoint <- data2$Sample
+	data2$Timepoint <- gsub("Ribodep_2hpf_rep1", "2hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_4hpf_rep1", "4hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_6hpf_rep1", "6hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_2hpf_rep2", "2hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_4hpf_rep2", "4hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_6hpf_rep2", "6hpf",data2$Timepoint )
+	pdf(file=paste(label, "Overall_Tail_Comparison_Single_Transcript.pdf",sep="_"),height=6,width=10,onefile=FALSE)
+	print(ggplot(data2, aes(x=tail_length, color=Timepoint)) +
+		geom_density(data=subset(data2, Rep=="Rep1"), linetype="dashed")+
+		geom_density(data=subset(data2, Rep=="Rep2"))+
+  		theme_bw()+
+  		xlim(-10, 350)+
+   		facet_wrap(~Gene_Type, scales="free"))
+	dev.off()
+}
+tail_comparison_overall_rep_merged(ribodep_rep1_rep2_all, "Ribodepletion_All_Timepoints_rep1_2")
+
 
 
 
@@ -157,7 +220,159 @@ tail_comparison_median_per_gene_protein<- function(data, label) {
 
 
 tail_comparison_median_per_gene_protein(polyA_vs_ribodep_4hpf, "PolyA_vs_Ribodep_4HPF")
-tail_comparison_median_per_gene_protein(ribodep_all, "Ribodepletion_All_Timepoints")
+tail_comparison_median_per_gene_protein(ribodep_rep1_all, "Ribodepletion_All_Timepoints_rep1")
+tail_comparison_median_per_gene_protein(ribodep_rep2_all, "Ribodepletion_All_Timepoints_rep2")
+
+tail_comparison_median_per_gene_protein(ribodep_hpf2_replicability, "Ribodepletion_2hpf_Replicability")
+tail_comparison_median_per_gene_protein(ribodep_hpf4_replicability, "Ribodepletion_4hpf_Replicability")
+tail_comparison_median_per_gene_protein(ribodep_hpf6_replicability, "Ribodepletion_6hpf_Replicability")
+
+
+
+
+tail_comparison_median_per_gene_protein_rep_merged <- function(data, label) {
+	data2 <- subset(data, Gene_Type=="protein_coding")
+	data2 <-  data2[!duplicated(data2[c("Gene_Name", "Sample")]),]
+	data2$Timepoint <- data2$Sample
+	data2$Timepoint <- gsub("Ribodep_2hpf_rep1", "2hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_4hpf_rep1", "4hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_6hpf_rep1", "6hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_2hpf_rep2", "2hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_4hpf_rep2", "4hpf",data2$Timepoint )
+	data2$Timepoint <- gsub("Ribodep_6hpf_rep2", "6hpf",data2$Timepoint )
+	pdf(file=paste(label, "Median_Tail_Per_Gene_Comparison_mRNA.pdf",sep="_"),height=6,width=10,onefile=FALSE)
+	print(ggplot(data2, aes(x=Median_Length, color=Timepoint)) +
+		geom_density(data=subset(data2, Rep=="Rep1"), linetype="dashed")+
+		geom_density(data=subset(data2, Rep=="Rep2"))+
+		theme_bw()+
+  		coord_cartesian(xlim=c(-10, 200))+
+   		facet_wrap(~Gene_Type, scales="free"))
+	dev.off()
+}
+
+tail_comparison_median_per_gene_protein_rep_merged(ribodep_rep1_rep2_all, "Ribodepletion_All_Timepoints_rep1_2")
+
+
+
+
+### Rep1 vs Rep2
+
+
+merge_two_rep_tail <- function(rep1, rep2,label) {
+	rep1_unique <-   rep1[!duplicated(rep1[c("Gene_Name", "Sample")]),]
+	rep2_unique <-   rep2[!duplicated(rep2[c("Gene_Name", "Sample")]),]
+	data_merged <- merge(rep1_unique,rep2_unique, by.x="Gene_Name", by.y="Gene_Name" )
+	data_merged_mRNA <-subset(data_merged, Gene_Type.x =="protein_coding")
+	data_merged_mRNA_min20 <- subset(data_merged_mRNA, Gene_Count.x > 30 & Gene_Count.y >30)
+	 corr <- cor.test(data_merged_mRNA_min20$Median_Length.x, data_merged_mRNA_min20$Median_Length.y, method = "pearson", conf.level = 0.95)
+	 value <- as.numeric(corr$estimate)
+      pdf(file=paste(label,"Rep1vsRep2_TailMedian_Min30.pdf",sep="_"),height=4,width=4,onefile=FALSE)
+		print(ggplot(data_merged_mRNA_min20, aes(x=Median_Length.x, y=Median_Length.y)) + 
+		theme_bw()+ 
+       ylim(0,160)+
+       xlim(0,160)+
+        ggtitle(paste("Rep1 vs Rep2", label))+
+        annotate(geom="text", x=50, y=150, label=paste("Pearson Correlation =", value),
+              color="red", size=2)+
+		xlab("Rep1")+
+        ylab("Rep2")+
+  		geom_point())
+  		dev.off()
+}
+merge_two_rep_tail(ribodep_hpf2_rep1.reshape,ribodep_hpf2_rep2.reshape, "2HPF")
+merge_two_rep_tail(ribodep_hpf4_rep1.reshape,ribodep_hpf4_rep2.reshape, "4HPF")
+merge_two_rep_tail(ribodep_hpf6_rep1.reshape,ribodep_hpf6_rep2.reshape, "6HPF")
+
+
+
+
+merge_two_rep_genecount <- function(rep1, rep2,label) {
+	rep1_unique <-   rep1[!duplicated(rep1[c("Gene_Name", "Sample")]),]
+	rep2_unique <-   rep2[!duplicated(rep2[c("Gene_Name", "Sample")]),]
+	data_merged <- merge(rep1_unique,rep2_unique, by.x="Gene_Name", by.y="Gene_Name" )
+	data_merged_mRNA <-subset(data_merged, Gene_Type.x =="protein_coding")
+	data_merged_mRNA_min20 <- subset(data_merged_mRNA, Gene_Count.x > 30 & Gene_Count.y >30)
+	 corr <- cor.test(data_merged_mRNA_min20$Gene_Count.x, data_merged_mRNA_min20$Gene_Count.y, method = "pearson", conf.level = 0.95)
+	 value <- as.numeric(corr$estimate)
+      pdf(file=paste(label,"Rep1vsRep2_Genecount_Min30.pdf",sep="_"),height=4,width=4,onefile=FALSE)
+		print(ggplot(data_merged_mRNA_min20, aes(x=log(Gene_Count.x), y=log(Gene_Count.y))) + 
+		theme_bw()+ 
+        ylim(3,7.5)+
+        xlim(3,7.5)+
+        ggtitle(paste("Rep1 vs Rep2", label))+
+        annotate(geom="text", x=4, y=7, label=paste("Pearson Correlation =", value),
+              color="red", size=2)+
+		xlab("log Gene Count Rep1")+
+        ylab("log Gene Count Rep2")+
+  		geom_point())
+  		dev.off()
+}
+merge_two_rep_genecount(ribodep_hpf2_rep1.reshape,ribodep_hpf2_rep2.reshape, "2HPF")
+merge_two_rep_genecount(ribodep_hpf4_rep1.reshape,ribodep_hpf4_rep2.reshape, "4HPF")
+merge_two_rep_genecount(ribodep_hpf6_rep1.reshape,ribodep_hpf6_rep2.reshape, "6HPF")
+
+
+
+
+
+
+##### DENS COLS
+
+merge_two_rep <- function(rep1, rep2) {
+	rep1_unique <-   rep1[!duplicated(rep1[c("Gene_Name", "Sample")]),]
+	rep2_unique <-   rep2[!duplicated(rep2[c("Gene_Name", "Sample")]),]
+	data_merged <- merge(rep1_unique,rep2_unique, by.x="Gene_Name", by.y="Gene_Name" )
+	data_merged_mRNA <-subset(data_merged, Gene_Type.x =="protein_coding")
+	data_merged_mRNA_min30 <- subset(data_merged_mRNA, Gene_Count.x > 30 & Gene_Count.y >30)
+	return(data_merged_mRNA_min30)
+}
+
+data_merged_mRNA_min30_2hpf <- merge_two_rep(ribodep_hpf2_rep1.reshape,ribodep_hpf2_rep2.reshape)
+data_merged_mRNA_min30_4hpf <- merge_two_rep(ribodep_hpf4_rep1.reshape,ribodep_hpf4_rep2.reshape)
+data_merged_mRNA_min30_6hpf <- merge_two_rep(ribodep_hpf6_rep1.reshape,ribodep_hpf6_rep2.reshape)
+
+
+
+
+
+plot_denscols_with_corr_pearson<-function(pdfname,my_x,my_y,xlab,ylab) {
+	pdf(file=paste(pdfname, "_pearson.pdf",sep=""), height=6, width=6)
+	dcols<-densCols(my_x,my_y, colramp=colorRampPalette(blues9[-(1:3)]))
+	plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab)
+	title(main=pdfname, col.main="black", font.main=4)
+	#abline(v=0, lty=2)
+	# Correlation
+	test<-cor.test(my_x,my_y, method="pearson")
+	print(test)
+	cor222<-paste("Pearson's rho =",round(as.numeric(test$estimate),3))
+	#pval<-paste("Pval =",test$p.value)
+	mtext(paste(cor222))
+	#mtext(paste(cor222,pval,sep=" ; ")) #Print the subtitle with the dataset correlation
+	dev.off()
+}
+
+plot_denscols_with_corr_pearson("Rep1_Rep2_2hpf_genecount", log(data_merged_mRNA_min30_2hpf$Gene_Count.x) , log(data_merged_mRNA_min30_2hpf$Gene_Count.y), "2HPF_Rep1_logGeneCount", "2HPF_Rep2_logGeneCount" )
+plot_denscols_with_corr_pearson("Rep1_Rep2_4hpf_genecount", log(data_merged_mRNA_min30_4hpf$Gene_Count.x) , log(data_merged_mRNA_min30_4hpf$Gene_Count.y), "4HPF_Rep1_logGeneCount", "4HPF_Rep2_logGeneCount" )
+
+plot_denscols_with_corr_pearson("Rep1_Rep2_6hpf_genecount", log(data_merged_mRNA_min30_6hpf$Gene_Count.x) , log(data_merged_mRNA_min30_6hpf$Gene_Count.y), "6HPF_Rep1_logGeneCount", "6HPF_Rep2_logGeneCount" )
+
+
+
+
+
+plot_denscols_with_corr_pearson("Rep1_Rep2_2hpf_tail", data_merged_mRNA_min30_2hpf$Median_Length.x , data_merged_mRNA_min30_2hpf$Median_Length.y, "2HPF_Rep1_Median_Length", "2HPF_Rep2_Median_Length" )
+
+
+plot_denscols_with_corr_pearson("Rep1_Rep2_4hpf_tail", data_merged_mRNA_min30_4hpf$Median_Length.x , data_merged_mRNA_min30_4hpf$Median_Length.y, "4HPF_Rep1_Median_Length", "4HPF_Rep2_Median_Length" )
+
+
+plot_denscols_with_corr_pearson("Rep1_Rep2_6hpf_tail", data_merged_mRNA_min30_6hpf$Median_Length.x , data_merged_mRNA_min30_6hpf$Median_Length.y, "6HPF_Rep1_Median_Length", "6HPF_Rep2_Median_Length" )
+
+
+
+
+
+
 
 
 
@@ -243,11 +458,10 @@ hpf4_merged_mRNA_min20_significant_changing <- subset(hpf4_merged_mRNA_min20, Ab
 
 
 
-Zebrafish_ID_Conversion.txt
 
 ### BOXPLOT OF THE MEDIAN TAIL PER GENE IN RIBODEPLETED RUN
 	GENE_ID <- read.delim("Zebrafish_ID_Name_Conversion.txt")
-	ribodep_all_unique <-ribodep_all[!duplicated(ribodep_all[c("Gene_Name", "Sample")]),]
+	ribodep_all_unique <-ribodep_rep2_all[!duplicated(ribodep_rep2_all[c("Gene_Name", "Sample")]),]
 	ribodep_all_unique_names <- merge(ribodep_all_unique, GENE_ID, by.x="Gene_Name", by.y="Gene.stable.ID")
 	ribodep_all_unique_min20 <-  subset(ribodep_all_unique_names, Gene_Count > 20)
 	ribodep_all_unique_min20_mRNA <- subset(ribodep_all_unique_min20, Gene_Type =="protein_coding")
@@ -255,7 +469,7 @@ Zebrafish_ID_Conversion.txt
 
 	
 	
-		pdf(file= "Tails_Ribodepleted_Timepoints_ProteinCoding_Tails_Min20.pdf",height=10,width=20,onefile=FALSE)
+		pdf(file= "Tails_Ribodepleted_Timepoints_ProteinCoding_Tails_Min20_rep2.pdf",height=10,width=20,onefile=FALSE)
 			print(ggplot(ribodep_all_unique_min20_mRNA, aes(x=Sample, y=Median_Length)) + 
 				geom_quasirandom(varwidth = TRUE, aes(color=Sample))+
 				geom_boxplot(aes(alpha=0), outlier.shape=NA)+
@@ -272,13 +486,6 @@ Zebrafish_ID_Conversion.txt
             		legend.text = element_text(color = "black", size=15)))
 		dev.off()
 	
-
-
-
-
-
-
-
 
 
 
@@ -505,9 +712,89 @@ dev.off()
 scatter_plot(merged_2_4_hours_mRNA, "2HPF", "4HPF")
 
 
+# LINE PLOT WITH THREE TIME POINTS
+ribodep_hpf2.tail_class_count_unique <-ribodep_hpf2.tail_class_count[!duplicated(ribodep_hpf2.tail_class_count[c("Gene_Name", "Sample")]),]
+ribodep_hpf4.tail_class_count_unique <-ribodep_hpf4.tail_class_count[!duplicated(ribodep_hpf4.tail_class_count[c("Gene_Name", "Sample")]),]
+ribodep_hpf6.tail_class_count_unique <-ribodep_hpf6.tail_class_count[!duplicated(ribodep_hpf6.tail_class_count[c("Gene_Name", "Sample")]),]
+
+
+columns <- c("Gene_Name", "Gene_Type", "Gene_Count", "Ratio_PolyA", "Ratio_NoPolyA")
+merged_2_4_hours <-  merge(ribodep_hpf2.tail_class_count_unique[,columns], ribodep_hpf4.tail_class_count_unique[,columns], by.x=c("Gene_Name", "Gene_Type"),  by.y=c("Gene_Name", "Gene_Type"))
+
+merged_2_4_6_hours <-  merge(merged_2_4_hours, ribodep_hpf6.tail_class_count_unique[,columns], by.x=c("Gene_Name", "Gene_Type"),  by.y=c("Gene_Name", "Gene_Type"))
+
+
+colnames(merged_2_4_6_hours) <-  c("Gene_Name", "Gene_Type", "Gene_Count.2hpf","Ratio_PolyA.2hpf" , "Ratio_NoPolyA.2hpf","Gene_Count.4hpf" ,"Ratio_PolyA.4hpf" , "Ratio_NoPolyA.4hpf","Gene_Count.6hpf","Ratio_PolyA.6hpf" ,"Ratio_NoPolyA.6hpf" ) 
+
+merged_2_4_6_hours_mRNA <- subset(merged_2_4_6_hours, Gene_Type=="protein_coding")
+
+merged_2_4_6_hours_mRNA_min50 <- subset(merged_2_4_6_hours_mRNA, Gene_Count.2hpf> 10 & Gene_Count.4hpf> 10 & Gene_Count.6hpf> 10)
+
+merged_2_4_6_hours_mRNA_min50_2 <- merged_2_4_6_hours_mRNA_min50[,c("Gene_Name", "Gene_Type","Ratio_PolyA.2hpf","Ratio_PolyA.4hpf" , "Ratio_PolyA.6hpf")]
+merged_2_4_6_hours_mRNA_min50_2$Diff_2_4 <- abs(merged_2_4_6_hours_mRNA_min50_2$Ratio_PolyA.2hpf- merged_2_4_6_hours_mRNA_min50_2$Ratio_PolyA.4hpf)
+merged_2_4_6_hours_mRNA_min50_2$Diff_4_6 <- abs(merged_2_4_6_hours_mRNA_min50_2$Ratio_PolyA.4hpf- merged_2_4_6_hours_mRNA_min50_2$Ratio_PolyA.6hpf)
+
+merged_2_4_6_hours_mRNA_min50_changing <- subset(merged_2_4_6_hours_mRNA_min50_2,Diff_2_4>0.2 | Diff_4_6 > 0.2 )
+merged_2_4_6_hours_mRNA_min50_changing$Type <- "Changing"
+
+merged_2_4_6_hours_mRNA_min50_notchanging <- subset(merged_2_4_6_hours_mRNA_min50_2,Diff_2_4 < 0.2 & Diff_4_6 < 0.2)
+merged_2_4_6_hours_mRNA_min50_notchanging$Type <- "NotChanging"
 
 
 
+merged_2_4_6_hours_mRNA_min50_type <- rbind(merged_2_4_6_hours_mRNA_min50_changing,merged_2_4_6_hours_mRNA_min50_notchanging)
+
+merged_2_4_6_hours_mRNA_min50_type2 <- merged_2_4_6_hours_mRNA_min50_type[,c("Gene_Name", "Gene_Type","Type","Ratio_PolyA.2hpf","Ratio_PolyA.4hpf" , "Ratio_PolyA.6hpf")]
+
+
+library(reshape2)
+merged_2_4_6_hours_mRNA_min50_melt <- melt(merged_2_4_6_hours_mRNA_min50_type2)
+
+
+	pdf(file= "ZebrafishTimePoints_PolyA_Ratio_LinePlot_mRNAs_min10.pdf",height=5,width=10,onefile=FALSE)
+		print(ggplot(data=merged_2_4_6_hours_mRNA_min50_melt, aes(x=variable, y=value, group=Gene_Name, colour=Type)) +
+ 			geom_line(alpha=1/5)+
+ 			scale_colour_manual(values=c("red","gray"))+
+ 			theme_bw()+
+ 			geom_text(data=subset(merged_2_4_6_hours_mRNA_min50_melt, value < 0.5), aes(label=Gene_Name))+
+  			geom_point())
+		dev.off()
+
+
+
+
+
+
+
+
+
+
+#### CHECK BINOMIALITY
+
+library(diptest)
+bimodality_test <- function(data) {
+	data_cov <- subset(data, Gene_Count >50)
+	data_mRNA <- subset(data_cov, Gene_Type=="protein_coding")
+	bimodal_table <- vector()
+	for (gene in unique(data_mRNA$Gene_Name)) {
+		subs <- subset(data_mRNA, Gene_Name==gene)
+		test <- (dip.test(subs$tail_length, simulate.p.value = FALSE, B = 2000))
+		statistic <- as.numeric(as.character(test$statistic))
+		p_value <- as.numeric(as.character(test$p.value))
+		gene_name <- gene
+		data_table <- as.data.frame(cbind(gene_name,statistic, p_value))
+		data_table$statistic <- as.numeric(as.character(data_table$statistic))
+		data_table$p_value <- as.numeric(as.character(data_table$p_value))
+		bimodal_table <- rbind(bimodal_table,data_table)
+
+	}
+	return(bimodal_table)
+}
+
+
+
+
+ribodep_hpf2.bimodality <- bimodality_test(ribodep_hpf2.reshape)
 
 
 
