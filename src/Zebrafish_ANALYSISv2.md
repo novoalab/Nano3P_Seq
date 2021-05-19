@@ -12,6 +12,7 @@ library(scales)
 library(dplyr)
 library(ggridges)
 library(reshape2)
+library(EnvStats)
 
 #Import tail
 ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
@@ -106,7 +107,6 @@ polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf"
 
 
 
-library(EnvStats)
 
 
 dotplot <- function(data, label) {
@@ -326,17 +326,17 @@ plot_denscols_with_corr_pearson("PALSeq_vs_Nano3PSeq 6HPF", bartel_hpf6.processe
   GENE_ID <- read.delim("Zebrafish_ID_Name_Conversion.txt")
   ribodep_all_unique <-ribodep_all_merged[!duplicated(ribodep_all_merged[c("Gene_Name", "Sample")]),]
   ribodep_all_unique_names <- merge(ribodep_all_unique, GENE_ID, by.x="Gene_Name", by.y="Gene.stable.ID")
-  ribodep_all_unique_min20 <-  subset(ribodep_all_unique_names, Gene_Count > 20)
-  ribodep_all_unique_min20_mRNA <- subset(ribodep_all_unique_min20, Gene_Type =="protein_coding")
+  ribodep_all_unique_min30 <-  subset(ribodep_all_unique_names, Gene_Count > 30)
+  ribodep_all_unique_min30_mRNA <- subset(ribodep_all_unique_min20, Gene_Type =="protein_coding")
   
 
   
   
-    pdf(file= "Tails_Ribodepleted_Timepoints_ProteinCoding_Tails_Min20_merged.pdf",height=10,width=20,onefile=FALSE)
-      print(ggplot(ribodep_all_unique_min20_mRNA, aes(x=Sample, y=Median_Length)) + 
+    pdf(file= "Tails_Ribodepleted_Timepoints_ProteinCoding_Tails_Min30_merged.pdf",height=10,width=10,onefile=FALSE)
+      print(ggplot(ribodep_all_unique_min30_mRNA, aes(x=Sample, y=Median_Length)) + 
         geom_quasirandom(varwidth = TRUE, aes(color=Sample))+
         geom_boxplot(aes(alpha=0), outlier.shape=NA)+
-        geom_text_repel(data=subset(ribodep_all_unique_min20_mRNA,Median_Length==0), aes(label=Gene.name))+
+        #geom_text_repel(data=subset(ribodep_all_unique_min20_mRNA,Median_Length==0), aes(label=Gene.name))+
         stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
                 geom = "crossbar", width = 0.7, color="#c06c84")+
         theme_bw()+
@@ -349,6 +349,12 @@ plot_denscols_with_corr_pearson("PALSeq_vs_Nano3PSeq 6HPF", bartel_hpf6.processe
                 legend.text = element_text(color = "black", size=15)))
     dev.off()
   
+
+
+## Export table 
+all_to_export <- ribodep_all_unique_min30_mRNA[,c("Gene_Name","Gene.name","Sample", "Median_Length","Mean_Length","Gene_Count", "Gene_Count_Norm")]
+
+write.table(all_to_export, file="Zebrafish_Development_Supplementary_RepsMerged.tsv", sep="\t", quote=FALSE)
 
 
 
@@ -515,15 +521,15 @@ ribodep_all_unique_246hpf_final2$Ensembl_Transcript_ID <- NULL
 #Gene profile
 maternal <- read.delim("allTranscripts_riboZero_rnaSeq.maternal.txt", header=FALSE)
 maternal$Group2 <- "Maternal"
-zygotic <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
-zygotic$Group2 <- "Zygotic"
+zyfir <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
+zyfir$Group2 <- "Zyfir"
 
 mir430 <- read.delim("allTranscripts_riboZero_rnaSeq.mir430.txt", header=FALSE)
 mir430$Group2 <- "mir430"
 
 id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
 
-groups <- rbind(maternal, zygotic, mir430)
+groups <- rbind(maternal, zyfir, mir430)
 groups_id <- merge(groups,id_convert, by.x="V1", by.y="Transcript.stable.ID")
 groups_id$V1 <- NULL
 
@@ -581,6 +587,40 @@ dev.off()
 
 
 
+ribodep_all_unique_246hpf_tails <- ribodep_all_unique_246hpf_final3[,c("Gene_Name","Gene_Type","Group1","Group2", "Median_Length.2hpf","Median_Length.4hpf","Median_Length.6hpf" )]
+
+#Normalize by 2hpf
+ribodep_all_unique_246hpf_tails$Median_Length2.2hpf <- (ribodep_all_unique_246hpf_tails$Median_Length.2hpf+1)/(ribodep_all_unique_246hpf_tails$Median_Length.2hpf+1)
+ribodep_all_unique_246hpf_tails$Median_Length2.4hpf <- (ribodep_all_unique_246hpf_tails$Median_Length.4hpf+1)/(ribodep_all_unique_246hpf_tails$Median_Length.2hpf+1)
+ribodep_all_unique_246hpf_tails$Median_Length2.6hpf <- (ribodep_all_unique_246hpf_tails$Median_Length.6hpf+1)/(ribodep_all_unique_246hpf_tails$Median_Length.2hpf+1)
+
+ribodep_all_unique_246hpf_tails_relativeto2hpf <- ribodep_all_unique_246hpf_tails[,c("Gene_Name","Gene_Type", "Group1","Group2", "Median_Length2.2hpf" ,"Median_Length2.4hpf", "Median_Length2.6hpf")]
+
+
+
+
+ribodep_all_unique_246hpf_tails_relativeto2hpf_melted <- melt(ribodep_all_unique_246hpf_tails_relativeto2hpf)
+ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna  <- subset(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted, Gene_Type=="protein_coding")
+
+
+pdf(file="Zebrafish_Embryos_TailLength_Line_Plot_Maternal_vs_Rest_Relative_to_2hpf.pdf",height=4,width=5,onefile=FALSE)
+print(ggplot(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna, aes(x=variable, y=log(value), group=Gene_Name)) +
+  geom_line(data=subset(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna, Group1=="Rest"), alpha=1/5, color="grey")+
+  geom_line(data=subset(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna, Group1=="Maternal"), alpha=1/2, color="red")+
+  theme_bw()+
+  geom_point(data=subset(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna, Group1=="Rest"), color="grey")+
+    geom_point(data=subset(ribodep_all_unique_246hpf_tails_relativeto2hpf_melted_mrna, Group1=="Maternal"), color="red"))
+
+dev.off()
+
+
+
+
+
+
+
+
+
 
 #### INVESTIGATE THE MATERNAL RNAs TAIL LENGTHS
 GENE_ID <- read.delim("Zebrafish_ID_Name_Conversion.txt")
@@ -628,15 +668,15 @@ ribodep_all_unique_246hpf_mincov_final2$Ensembl_Transcript_ID <- NULL
 #Gene profile
 maternal <- read.delim("allTranscripts_riboZero_rnaSeq.maternal.txt", header=FALSE)
 maternal$Group2 <- "Maternal"
-zygotic <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
-zygotic$Group2 <- "Zygotic"
+zyfir <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
+zyfir$Group2 <- "Zyfir"
 
 mir430 <- read.delim("allTranscripts_riboZero_rnaSeq.mir430.txt", header=FALSE)
 mir430$Group2 <- "mir430"
 
 id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
 
-groups <- rbind(maternal, zygotic, mir430)
+groups <- rbind(maternal, zyfir, mir430)
 groups_id <- merge(groups,id_convert, by.x="V1", by.y="Transcript.stable.ID")
 groups_id$V1 <- NULL
 
@@ -747,7 +787,6 @@ dev.off()
 
 
 
-
 pdf(file="Zebrafish_Embryos_TailLength_Boxplot_Maternal_vs_Rest_3Groups.pdf",height=4,width=10,onefile=FALSE)
     print(ggplot(ribodep_all_unique_246hpf_mincov_taillengths_melted_mrna, aes(x = Group2, y = log(value+1) )) + 
       geom_boxplot(aes(fill = variable),position = position_dodge(0.9)) +
@@ -757,12 +796,7 @@ pdf(file="Zebrafish_Embryos_TailLength_Boxplot_Maternal_vs_Rest_3Groups.pdf",hei
       theme_bw())
   dev.off()
 
-            
 
- pdf(file="Zebrafish_Embryos_TailLength_Violinplot_Maternal_vs_Rest_3Groups.pdf",height=4,width=10,onefile=FALSE)
-print(ggplot(ribodep_all_unique_246hpf_mincov_taillengths_melted_mrna, aes(x=Group2, y=log(value+1), fill=variable)) +
-  geom_violin(position=position_dodge(1)))
-dev.off()
 
 
 
@@ -788,123 +822,6 @@ dev.off()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pdf(file= "Zebrafish_Embryos_GeneCount_Dot_Plot_Maternal_vs_Rest_Relative_to_2hpf.pdf",height=10,width=20,onefile=FALSE)
-  print(ggplot(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, aes(x=variable, y=log(value+1))) + 
-    geom_quasirandom(varwidth = TRUE, aes(color=variable))+
-    geom_boxplot(aes(alpha=0), outlier.shape=NA)+
-    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
-            geom = "crossbar", width = 0.7, color="#c06c84")+
-    theme_bw()+
-    ggtitle("Zebrafish Embryo")+
-    xlab("Time Points")+
-    ylab("log(Normalized Gene Count)") +
-    facet_wrap(~Group, scales="free")+
-    theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
-            axis.title=element_text(size=17,face="bold"),
-            legend.title = element_text(size = 20),
-            legend.text = element_text(color = "black", size=15)))
-dev.off()
-
-
-
-
-
-
-
-
-### DESEQ2
-library(DESeq2)
-ribodep_all_unique_246hpf_genecounts_mRNA <- subset(ribodep_all_unique_246hpf_genecounts, Gene_Type=="protein_coding")
-deseq_count_data <- ribodep_all_unique_246hpf_genecounts_mRNA[,c("Gene_Name", "Gene_Count_Norm.2hpf", "Gene_Count_Norm.4hpf","Gene_Count_Norm.6hpf")]
-
-
-dds <- DESeqDataSetFromMatrix(countData=deseq_count_data, 
-                              design=~dex, tidy = TRUE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pdf(file="MedianTails_Ribodepleted_Timepoints_Maternal.pdf",height=6,width=15,onefile=FALSE)
-  print(ggplot(maternal_group, aes(x=Sample, y=Median_Length)) + 
-    geom_quasirandom(varwidth = TRUE, aes(color=Sample))+
-    geom_boxplot(aes(alpha=0), outlier.shape=NA)+
-    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
-        geom = "crossbar", width = 0.7, color="#c06c84")+
-    theme_bw()+
-    xlab("Group")+
-        ylab("Median Tail length") +
-        facet_wrap(~Group)+
-    theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
-        axis.title=element_text(size=17,face="bold"),
-        legend.title = element_text(size = 20),
-        legend.text = element_text(color = "black", size=15)))
-dev.off()
-
-
-
-
-
-#Only matching genes
-maternal_group_complete <- vector()
-for (gene in unique(maternal_group$Gene_Name)){
-  subs <- subset(maternal_group, Gene_Name==gene)
-  if (nrow(subs) ==3){
-    maternal_group_complete <- rbind(maternal_group_complete, subs)
-    } else {}
-}
-
-
-
-
-
-#Line Plot
-pdf(file="Zebrafish_Embryos_MedianTail_Line_Plot_Maternal.pdf",height=5,width=15,onefile=FALSE)
-print(ggplot(maternal_group_complete, aes(x=Sample, y=Median_Length, group=Gene_Name)) +
-  geom_line(alpha=1, aes(color=Group))+
-  facet_wrap(~Group)+
-  geom_point( aes(color=Group)))
-dev.off()
-
-
-
-#Line Plot
-pdf(file="Zebrafish_Embryos_GeneCount_Line_Plot_Maternal.pdf",height=5,width=15,onefile=FALSE)
-print(ggplot(maternal_group_complete, aes(x=Sample, y=log(Gene_Count_Norm+1), group=Gene_Name)) +
-  geom_line(alpha=1, aes(color=Group))+
-  facet_wrap(~Group)+
-  geom_point( aes(color=Group)))
-dev.off()
 
 
 

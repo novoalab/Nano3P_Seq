@@ -153,6 +153,9 @@ plot_denscols_with_corr_pearson("Mouse_Rep1_Rep2_MedianTail_Sequins", mouse_rep1
 plot_denscols_with_corr_pearson("Mouse_Rep1_Rep2_Gene_Count_Sequins", mouse_rep1_vs_rep2_sequin2$Gene_Count_Norm.x, mouse_rep1_vs_rep2_sequin2$Gene_Count_Norm.y, "Rep1_Median_Gene_Count", "Rep2_Median_Gene_Count" )
 
 
+plot_denscols_with_corr_pearson("Mouse_Rep1_Rep2_logGene_Count_Sequins", log(mouse_rep1_vs_rep2_sequin2$Gene_Count.x+1), log(mouse_rep1_vs_rep2_sequin2$Gene_Count.y+1), "Rep1_log(Count)", "Rep2_log(Count)" )
+
+
 
 
 
