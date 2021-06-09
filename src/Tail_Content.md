@@ -268,14 +268,6 @@ scatter(mergedbed.rep2.2hpf, "2HPF_Rep2")
 
 
 
-
-
-
-
-
-
-
-
 data_a123 <- subset(data4,  p1 =="A" &  p2 =="A" &  p3 =="A")
 
 
@@ -290,6 +282,160 @@ merged_bed <- merge(data4, bed_file3, by.y="Read_ID", by.x="readid")
 
 
 merged_bed_a123 <- subset(merged_bed,  p1 =="A" &  p2 =="A" )
+
+
+
+
+
+
+
+
+
+
+
+###################################
+##### ANOTHER QUESTION TO ANSWER
+###################################
+
+
+
+
+
+#Import tail
+ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
+ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
+
+
+
+manipulate_tail_<- function(data) { 
+  data2 <- data
+  data2$tail_length <- as.numeric(as.character(data2$tail_length))
+  data2$tail_start <- as.numeric(as.character(data2$tail_start))
+  data2$tail_end <- as.numeric(as.character(data2$tail_end))
+  data2$samples_per_nt <- as.numeric(as.character(data2$samples_per_nt))
+  data2$samples_per_nt <- data2$samples_per_nt*1.2
+  data2$tail_length <- (data2$tail_end-data2$tail_start)/data2$samples_per_nt
+  data2[["tail_length"]][is.na(data2[["tail_length"]])] <- 0
+  data_filt <- subset(data2, tail_is_valid=="TRUE")
+  data_filt_T <- subset(data_filt, read_type=="polyT")
+
+  return(data_filt_T)
+}
+
+ribodepleted_rep1.tails_processed <- manipulate_tail_(ribodepleted_rep1.tails)
+ribodepleted_rep2.tails_processed <- manipulate_tail_(ribodepleted_rep2.tails)
+
+
+ribodepleted_merged.tails_processed <- rbind(ribodepleted_rep1.tails_processed,ribodepleted_rep2.tails_processed)
+
+
+# Import the data
+#RIBODEPLETED DATA
+ribodep_hpf2_rep1.data <- read.delim("2hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
+ribodep_hpf4_rep1.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
+ribodep_hpf6_rep1.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
+
+ribodep_hpf2_rep2.data <- read.delim("2hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+ribodep_hpf4_rep2.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+ribodep_hpf6_rep2.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged_Rep2.bed", header=FALSE)
+
+#Merge Reps
+ribodep_hpf2_merged.data <- rbind(ribodep_hpf2_rep1.data ,ribodep_hpf2_rep2.data )
+ribodep_hpf4_merged.data<- rbind(ribodep_hpf4_rep1.data ,ribodep_hpf4_rep2.data )
+ribodep_hpf6_merged.data <- rbind(ribodep_hpf6_rep1.data ,ribodep_hpf6_rep2.data )
+
+
+
+# Reshape the tables and remove low quality reads
+reshape<- function(data,tails,label) {
+  data2 <- data[,c("V1", "V4", "V5", "V6", "V16", "V17")]
+  colnames(data2) <- c("Chr","Read_ID", "Quality", "Strand", "Gene_Name", "Gene_Type")
+  data3 <- subset(data2, Quality > 30)
+  #Merge the data with tails
+  merged <- merge(data3, tails, by.x="Read_ID",by.y=c("read_id") )
+  merged <- merged[,c("Read_ID", "Chr", "Gene_Name", "Gene_Type", "tail_length")]
+  ourdata <- merged[,c("Gene_Name", "tail_length")]
+  ourdata2 <- do.call(data.frame,(aggregate(. ~Gene_Name, data =ourdata, FUN = function(ourdata) c(median=median(ourdata), mean = mean(ourdata), count = length(ourdata) ) )))
+  colnames(ourdata2) <- c("Gene_Name", "Median_Length", "Mean_Length", "Gene_Count")
+  coverage <- sum(ourdata2$Gene_Count)
+  #Merge the data with the stats tabls
+  merged2 <- merge(merged, ourdata2, by.x=c("Gene_Name"), by.y=c("Gene_Name"))
+  merged2$Gene_Count_Norm <- merged2$Gene_Count/coverage *10000
+  merged2$Sample <- label
+  merged3 <-  merged2[!duplicated(merged2[c("Gene_Name")]),]
+  #Create a category
+  gene_type_sum <- aggregate(.~Gene_Type, merged3[,c("Gene_Type", "Gene_Count_Norm")], sum)
+  gene_type_major <- subset(gene_type_sum, Gene_Count_Norm > 5.5)
+  gene_type_major$Category <- gene_type_major$Gene_Type
+  gene_type_minor <- subset(gene_type_sum, Gene_Count_Norm < 5.5)
+  gene_type_minor$Category <- "Other"
+  gene_type <- rbind(gene_type_major, gene_type_minor)
+  colnames(gene_type) <- c("Gene_Type", "Gene_Type_Count_Norm", "Category")
+  #MErge
+  merged4 <- merge(merged2, gene_type, by.x="Gene_Type", by.y="Gene_Type")
+  return(merged4)
+}
+
+
+ribodep_hpf2_merged.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_merged.tails_processed,"Ribodep_2hpf_merged")
+ribodep_hpf4_merged.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_merged")
+ribodep_hpf6_merged.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_merged")
+
+
+ribodep_all_merged <- rbind(ribodep_hpf2_merged.reshape, ribodep_hpf4_merged.reshape, ribodep_hpf6_merged.reshape)
+
+
+
+
+
+
+
+merge_bed <- function(data, bedfile, label) {
+merged_bed <- merge(data, bedfile, by.y="Read_ID", by.x="readid")
+final2<- vector()
+for (gene in unique(merged_bed$Gene_Name)){
+	subs <- subset(merged_bed ,Gene_Name==gene)
+		gene_count <- nrow(subs)
+		last_three_row_a <- nrow(subset(subs,  p1 =="A" &  p2 =="A" &  p3 =="A"))
+		common_base_a <- nrow(subset(subs,  most_common_base=="A"))
+		common_base_t <- nrow(subset(subs,  most_common_base=="T"))
+		Gene_Name <- gene
+		final <- as.data.frame(cbind(gene,gene_count,last_three_row_a,common_base_a,common_base_t))
+		final$gene_count <- as.numeric(as.character(final$gene_count ))
+		final$common_base_a <- as.numeric(as.character(final$common_base_a ))
+		final$common_base_t <- as.numeric(as.character(final$common_base_t ))
+		final$last_three_row_a <- as.numeric(as.character(final$last_three_row_a ))
+		final$last_three_row_a_perc <- final$last_three_row_a/final$gene_count
+		final$common_base_a_perc <- final$common_base_a/final$gene_count
+		final$common_base_t_perc <- final$common_base_t/final$gene_count
+		final2 <- rbind(final2,final)
+	}
+final2$Sample <- label
+return(final2)
+}
+
+mergedbed.rep2.2hpf <- merge_bed(processed.rep2.2hpf,ribodep_all_merged,"2HPF_Rep2")
+
+mergedbed.rep2.2hpf_2 <- merge(mergedbed.rep2.2hpf ,ribodep_all_merged[,c("Gene_Name", "Median_Length")], by.x="gene", by.y="Gene_Name" )
+mergedbed.rep2.2hpf_2  <- subset(mergedbed.rep2.2hpf_2 , )
+
+
+mergedbed.rep2.2hpf_unique <-mergedbed.rep2.2hpf_2 [!duplicated(mergedbed.rep2.2hpf_2 [c("gene")]),]
+
+mergedbed.rep2.2hpf_unique_top <- subset(mergedbed.rep2.2hpf_unique, last_three_row_a_perc >0.5)
+mergedbed.rep2.2hpf_unique_top$Group <- "Last_Three_U"
+mergedbed.rep2.2hpf_unique_rest <- subset(mergedbed.rep2.2hpf_unique, last_three_row_a_perc <0.5)
+mergedbed.rep2.2hpf_unique_rest$Group <- "Rest"
+
+
+content_groups_both <- rbind(mergedbed.rep2.2hpf_unique_top,mergedbed.rep2.2hpf_unique_rest)
+
+
+
+pdf("Tail_Lenght_Tail_Content_Boxplot.pdf",height=4,width=4,onefile=FALSE)
+print(ggplot(content_groups_both, aes(x=Group, y=Median_Length)) + 
+  geom_boxplot())
+dev.off()
 
 
 

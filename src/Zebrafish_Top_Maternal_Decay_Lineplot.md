@@ -1,5 +1,5 @@
 ########################################################
-######## ANALYSIS OF THE ZEBRAFISH RUNS REPS MERGED ####
+######## ZEBRAFISH Top Maternal Decay Line Plot ########
 ########################################################
 ########## OGUZHAN BEGIK APRIL 2020 ####################
 
@@ -18,7 +18,6 @@ library(EnvStats)
 ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
 ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
 
-polyA.tails <- read.delim("cDNA8523612_tails.csv", sep=",")
 
 
 manipulate_tail_<- function(data) { 
@@ -39,12 +38,7 @@ manipulate_tail_<- function(data) {
 ribodepleted_rep1.tails_processed <- manipulate_tail_(ribodepleted_rep1.tails)
 ribodepleted_rep2.tails_processed <- manipulate_tail_(ribodepleted_rep2.tails)
 
-polyA.tails_processed <- manipulate_tail_(polyA.tails)
-
 ribodepleted_merged.tails_processed <- rbind(ribodepleted_rep1.tails_processed,ribodepleted_rep2.tails_processed)
-
-#POLYA SELECTED
-polyA_hpf4.data <- read.delim("4hpf_pAselected.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
 
 
 
@@ -100,58 +94,16 @@ ribodep_hpf2_merged.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_mer
 ribodep_hpf4_merged.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_merged")
 ribodep_hpf6_merged.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_merged")
 
-
 ribodep_all_merged <- rbind(ribodep_hpf2_merged.reshape, ribodep_hpf4_merged.reshape, ribodep_hpf6_merged.reshape)
 
-polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf")
 
 
 
 
 
+#### INVESTIGATE THE MATERNAL RNAs GENE COUNT
+ribodep_all_unique <-ribodep_all_merged[!duplicated(ribodep_all_merged[c("Gene_Name", "Sample")]),]
 
-
-
-
-
-count_polyA_population <- function(data) {
-data<- subset(data, Gene_Count >10)
-data$Tail_Class <- data$tail_length
-data$Tail_Class[which(data$tail_length == 0)] <- "No_PolyA"
-data$Tail_Class[which(data$tail_length < 10 & data$tail_length  > 0)]<- "Small_PolyA"
-data$Tail_Class[which(data$tail_length >= 10 )]<- "PolyA"
-final <- vector()
-pre <- vector()
-for (gene in unique(data$Gene_Name)) {
-  subs <- subset(data, Gene_Name==gene)
-  sub_table <- table(subs$Tail_Class)
-  pre$gene <- gene
-  pre <- as.data.frame(pre)
-  pre$PolyA_Count <- as.numeric(sub_table["PolyA"])
-  pre$No_PolyA_Count <- as.numeric(sub_table["No_PolyA"])
-  final<- rbind(final,pre)
-}
-
-final[["PolyA_Count"]][is.na(final[["PolyA_Count"]])] <- 0
-final[["No_PolyA_Count"]][is.na(final[["No_PolyA_Count"]])] <- 0
-final$Total <- final$PolyA_Count + final$No_PolyA_Count
-final$Ratio_PolyA <- final$PolyA_Count /final$Total
-final$Ratio_NoPolyA<- final$No_PolyA_Count /final$Total
-merged <- merge(data, final, by.x="Gene_Name", by.y="gene")
-  return(merged)
-}
-
-ribodep_hpf2.tail_class_count <- count_polyA_population(ribodep_hpf2_merged.reshape)
-ribodep_hpf4.tail_class_count <- count_polyA_population(ribodep_hpf4_merged.reshape)
-ribodep_hpf6.tail_class_count <- count_polyA_population(ribodep_hpf6_merged.reshape)
-
-
-
-
-
-
-
-#### INVESTIGATE THE MATERNAL RNAs GENE COUNTS
 
 ribodep_all_unique_2hpf <- subset(ribodep_all_unique, Sample=="Ribodep_2hpf_merged")
 ribodep_all_unique_4hpf <- subset(ribodep_all_unique, Sample=="Ribodep_4hpf_merged")
@@ -181,76 +133,36 @@ ribodep_all_unique_246hpf_final <- cbind(ribodep_all_unique_246hpf_characters,ri
 maternal <- read.delim("264_top_maternal_decay.txt")
 maternal$Group1 <- "Maternal"
 
-
-
 ribodep_all_unique_246hpf_final2 <- merge(ribodep_all_unique_246hpf_final, maternal,all.x=TRUE, by.x="Gene_Name", by.y="Ensembl_Gene_ID")
 ribodep_all_unique_246hpf_final2$Group1[is.na(ribodep_all_unique_246hpf_final2$Group1)] <- "Rest"
 ribodep_all_unique_246hpf_final2$Ensembl_Transcript_ID <- NULL
 
 
+ribodep_all_unique_246hpf_genecounts <- ribodep_all_unique_246hpf_final2[,c("Gene_Name","Gene_Type","Group1", "Gene_Count_Norm.2hpf","Gene_Count_Norm.4hpf","Gene_Count_Norm.6hpf" )]
 
 
-#Gene profile
-maternal <- read.delim("allTranscripts_riboZero_rnaSeq.maternal.txt", header=FALSE)
-maternal$Group2 <- "Maternal"
-zyfir <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
-zyfir$Group2 <- "Zyfir"
+#Normalize by 2hpf
+ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm2.2hpf <- (ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.2hpf+1)/(ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.2hpf+1)
+ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm2.4hpf <- (ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.4hpf+1)/(ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.2hpf+1)
+ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm2.6hpf <- (ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.6hpf+1)/(ribodep_all_unique_246hpf_genecounts$Gene_Count_Norm.2hpf+1)
 
-mir430 <- read.delim("allTranscripts_riboZero_rnaSeq.mir430.txt", header=FALSE)
-mir430$Group2 <- "mir430"
-
-id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
-
-groups <- rbind(maternal, zyfir, mir430)
-groups_id <- merge(groups,id_convert, by.x="V1", by.y="Transcript.stable.ID")
-groups_id$V1 <- NULL
+ribodep_all_unique_246hpf_genecounts_relativeto2hpf <- ribodep_all_unique_246hpf_genecounts[,c("Gene_Name","Gene_Type", "Group1", "Gene_Count_Norm2.2hpf" ,"Gene_Count_Norm2.4hpf", "Gene_Count_Norm2.6hpf")]
 
 
-ribodep_all_unique_246hpf_final3 <- merge(ribodep_all_unique_246hpf_final2, groups_id, all.x=TRUE, all.y=TRUE, by.x="Gene_Name", by.y="Gene.stable.ID")
-ribodep_all_unique_246hpf_final3$Group2[is.na(ribodep_all_unique_246hpf_final3$Group2)] <- "Rest"
+ribodep_all_unique_246hpf_genecounts_melted_relativeto2hpf <- melt(ribodep_all_unique_246hpf_genecounts_relativeto2hpf)
+ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf  <- subset(ribodep_all_unique_246hpf_genecounts_melted_relativeto2hpf, Gene_Type=="protein_coding")
 
 
 
+pdf(file="Zebrafish_Embryos_GeneCount_Line_Plot_Maternal_vs_Rest_Relative_to_2hpf.pdf",height=4,width=5,onefile=FALSE)
+print(ggplot(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, aes(x=variable, y=log(value), group=Gene_Name)) +
+  geom_line(data=subset(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, Group1=="Rest"), alpha=1/5, color="grey")+
+  geom_line(data=subset(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, Group1=="Maternal"), alpha=1/2, color="red")+
+  theme_bw()+
+  geom_point(data=subset(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, Group1=="Rest"), color="grey")+
+    geom_point(data=subset(ribodep_all_unique_246hpf_genecounts_melted_mrna_relativeto2hpf, Group1=="Maternal"), color="red"))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Count pA on mtrRNAs
-
-hpf2_mtrRNA <- subset(ribodep_hpf2.tail_class_count, Gene_Type=="Mt_rRNA")
-hpf4_mtrRNA <- subset(ribodep_hpf4.tail_class_count, Gene_Type=="Mt_rRNA")
-hpf6_mtrRNA <- subset(ribodep_hpf6.tail_class_count, Gene_Type=="Mt_rRNA")
-
-hpf4_mtrRNA_pA <- subset(polyA_hpf4.tail_class_count, Gene_Type=="Mt_rRNA")
-
-
-
-mtrRNA_zebrafish_ribodep <- rbind(hpf2_mtrRNA, hpf4_mtrRNA,hpf6_mtrRNA,hpf4_mtrRNA_pA)
-mtrRNA_zebrafish_ribodep_uniq <-mtrRNA_zebrafish_ribodep[!duplicated(mtrRNA_zebrafish_ribodep[c("Gene_Name", "Sample")]),]
-
-
-
-
-
-
-
-
-
+dev.off()
 
 
 

@@ -1,5 +1,5 @@
 ########################################################
-######## ANALYSIS OF THE ZEBRAFISH RUNS REPS MERGED ####
+######## Differentially changing tail analysis #########
 ########################################################
 ########## OGUZHAN BEGIK APRIL 2020 ####################
 
@@ -18,7 +18,6 @@ library(EnvStats)
 ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
 ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
 
-polyA.tails <- read.delim("cDNA8523612_tails.csv", sep=",")
 
 
 manipulate_tail_<- function(data) { 
@@ -39,12 +38,9 @@ manipulate_tail_<- function(data) {
 ribodepleted_rep1.tails_processed <- manipulate_tail_(ribodepleted_rep1.tails)
 ribodepleted_rep2.tails_processed <- manipulate_tail_(ribodepleted_rep2.tails)
 
-polyA.tails_processed <- manipulate_tail_(polyA.tails)
 
 ribodepleted_merged.tails_processed <- rbind(ribodepleted_rep1.tails_processed,ribodepleted_rep2.tails_processed)
 
-#POLYA SELECTED
-polyA_hpf4.data <- read.delim("4hpf_pAselected.genome11_sequin_ALLRNAs_Merged.bed", header=FALSE)
 
 
 
@@ -103,55 +99,15 @@ ribodep_hpf6_merged.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_mer
 
 ribodep_all_merged <- rbind(ribodep_hpf2_merged.reshape, ribodep_hpf4_merged.reshape, ribodep_hpf6_merged.reshape)
 
-polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf")
 
 
 
-
-
-
-
-
-
-
-count_polyA_population <- function(data) {
-data<- subset(data, Gene_Count >10)
-data$Tail_Class <- data$tail_length
-data$Tail_Class[which(data$tail_length == 0)] <- "No_PolyA"
-data$Tail_Class[which(data$tail_length < 10 & data$tail_length  > 0)]<- "Small_PolyA"
-data$Tail_Class[which(data$tail_length >= 10 )]<- "PolyA"
-final <- vector()
-pre <- vector()
-for (gene in unique(data$Gene_Name)) {
-  subs <- subset(data, Gene_Name==gene)
-  sub_table <- table(subs$Tail_Class)
-  pre$gene <- gene
-  pre <- as.data.frame(pre)
-  pre$PolyA_Count <- as.numeric(sub_table["PolyA"])
-  pre$No_PolyA_Count <- as.numeric(sub_table["No_PolyA"])
-  final<- rbind(final,pre)
-}
-
-final[["PolyA_Count"]][is.na(final[["PolyA_Count"]])] <- 0
-final[["No_PolyA_Count"]][is.na(final[["No_PolyA_Count"]])] <- 0
-final$Total <- final$PolyA_Count + final$No_PolyA_Count
-final$Ratio_PolyA <- final$PolyA_Count /final$Total
-final$Ratio_NoPolyA<- final$No_PolyA_Count /final$Total
-merged <- merge(data, final, by.x="Gene_Name", by.y="gene")
-  return(merged)
-}
-
-ribodep_hpf2.tail_class_count <- count_polyA_population(ribodep_hpf2_merged.reshape)
-ribodep_hpf4.tail_class_count <- count_polyA_population(ribodep_hpf4_merged.reshape)
-ribodep_hpf6.tail_class_count <- count_polyA_population(ribodep_hpf6_merged.reshape)
-
-
-
-
-
-
+ 
 
 #### INVESTIGATE THE MATERNAL RNAs GENE COUNTS
+ribodep_all_unique <-ribodep_all_merged[!duplicated(ribodep_all_merged[c("Gene_Name", "Sample")]),]
+ribodep_all_unique <- subset(ribodep_all_unique, Gene_Count>30)
+
 
 ribodep_all_unique_2hpf <- subset(ribodep_all_unique, Sample=="Ribodep_2hpf_merged")
 ribodep_all_unique_4hpf <- subset(ribodep_all_unique, Sample=="Ribodep_4hpf_merged")
@@ -178,77 +134,106 @@ ribodep_all_unique_246hpf_numbers[is.na(ribodep_all_unique_246hpf_numbers)] <- 0
 ribodep_all_unique_246hpf_final <- cbind(ribodep_all_unique_246hpf_characters,ribodep_all_unique_246hpf_numbers )
 
 
-maternal <- read.delim("264_top_maternal_decay.txt")
-maternal$Group1 <- "Maternal"
+ribodep_all_unique_246hpf_final_mRNA <- subset(ribodep_all_unique_246hpf_final, Gene_Type=="protein_coding")
+
+scatter_data <- ribodep_all_unique_246hpf_final_mRNA[,c("Gene_Name", "Median_Length.2hpf", "Median_Length.4hpf", "Median_Length.6hpf")]
+
+
+scatter_data_melted <- melt(scatter_data)
+#scatter_data_melted$value <- log(scatter_data_melted$value+1)
 
 
 
-ribodep_all_unique_246hpf_final2 <- merge(ribodep_all_unique_246hpf_final, maternal,all.x=TRUE, by.x="Gene_Name", by.y="Ensembl_Gene_ID")
-ribodep_all_unique_246hpf_final2$Group1[is.na(ribodep_all_unique_246hpf_final2$Group1)] <- "Rest"
-ribodep_all_unique_246hpf_final2$Ensembl_Transcript_ID <- NULL
+#Calculate THRESHOLD for the specificity
+genemean<- aggregate(scatter_data_melted[, 3], list(scatter_data_melted$Gene_Name), mean) #Row mean grouped by Gene
+colnames(genemean)<- c("Gene_Name", "genemean") 
+scatter2<- plyr::join(scatter_data_melted, genemean, by="Gene_Name") #Add Rowmeans to the original data
+scatter2$abs<- scatter2$value- scatter2$genemean #absolute distance of gene's expresion in tissue A from mean expression of this gene ins all tissues
+res_vec <- vector() #res_vec file is a vector file that will contain all the residuals (tissue.vs.all) for all of the genes in all tissues
+for (tissue in unique(scatter2$variable)){ #for every single tissue
+  subset <- scatter2[with(scatter2, scatter2$variable %in% tissue),] #extract the data for a specific tissue
+  res<- rlm(subset$value ~0 + subset$genemean) #linear model for that tissue 
+  res_vec= c(res$residuals,res_vec)#this contains residuals for every gene in every tissuevsall combination
+}
+threshold <- 2.5*sd(res_vec) #The threshold is 2.5 times the standard deviation of all the residuals
 
 
-
-
-#Gene profile
-maternal <- read.delim("allTranscripts_riboZero_rnaSeq.maternal.txt", header=FALSE)
-maternal$Group2 <- "Maternal"
-zyfir <- read.delim("allTranscripts_riboZero_rnaSeq.zyfir.txt", header=FALSE)
-zyfir$Group2 <- "Zyfir"
-
-mir430 <- read.delim("allTranscripts_riboZero_rnaSeq.mir430.txt", header=FALSE)
-mir430$Group2 <- "mir430"
-
-id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
-
-groups <- rbind(maternal, zyfir, mir430)
-groups_id <- merge(groups,id_convert, by.x="V1", by.y="Transcript.stable.ID")
-groups_id$V1 <- NULL
-
-
-ribodep_all_unique_246hpf_final3 <- merge(ribodep_all_unique_246hpf_final2, groups_id, all.x=TRUE, all.y=TRUE, by.x="Gene_Name", by.y="Gene.stable.ID")
-ribodep_all_unique_246hpf_final3$Group2[is.na(ribodep_all_unique_246hpf_final3$Group2)] <- "Rest"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Count pA on mtrRNAs
-
-hpf2_mtrRNA <- subset(ribodep_hpf2.tail_class_count, Gene_Type=="Mt_rRNA")
-hpf4_mtrRNA <- subset(ribodep_hpf4.tail_class_count, Gene_Type=="Mt_rRNA")
-hpf6_mtrRNA <- subset(ribodep_hpf6.tail_class_count, Gene_Type=="Mt_rRNA")
-
-hpf4_mtrRNA_pA <- subset(polyA_hpf4.tail_class_count, Gene_Type=="Mt_rRNA")
-
-
-
-mtrRNA_zebrafish_ribodep <- rbind(hpf2_mtrRNA, hpf4_mtrRNA,hpf6_mtrRNA,hpf4_mtrRNA_pA)
-mtrRNA_zebrafish_ribodep_uniq <-mtrRNA_zebrafish_ribodep[!duplicated(mtrRNA_zebrafish_ribodep[c("Gene_Name", "Sample")]),]
+##Seperate plots and calculations for each tissue
+specific_genes<-vector() 
+for (tissue in unique(scatter2$variable)){ #for each tissue
+subset <- scatter2[with(scatter2, scatter2$variable %in% tissue),] #extract the data for a specific tissue
+res<- rlm(subset$value ~0 + subset$genemean)#linear model for that tissue 
+subset$res<- res$residuals #add residual values to the matrix
+subset$diff<- abs(subset$res)-threshold #difference between gene's residual and threshold
+spec<-subset(subset,  abs>3) #extract specific genes in each tissue
+specific_genes<- rbind(spec,specific_genes) #add these genes to the initial data
+pdf(file=paste(tissue,"tail_difference.pdf",sep="."),height=5,width=5)
+print(ggplot(subset, aes(x=genemean, y=value,label=Gene_Name)) + 
+    #scale_x_continuous(limits= c(0,5))+
+    #scale_y_continuous(limits= c(0,5))+
+    geom_point(data=subset, col="black",size=0.5)+ #All data points will be black
+    geom_point(data=subset(subset, abs>50),col="red",size=2)+ #Except the specific genes
+    #geom_text_repel(data=subset(subset,  abs>50),segment.size  = 0.4,segment.color = "grey50",)+ #Add text to the specific genes
+    geom_smooth(method=rlm, formula = y ~0 + x, size=0.5,fullrange=TRUE)+ #abline will be from rlm function that passes through 0,0
+    xlab("Mean Tail Length All Timepoints")+
+    ylab(paste("Median Tail Length",tissue,sep=" "))+
+    theme(panel.background = element_blank(),
+         panel.border=element_rect(fill=NA),
+         panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         strip.background=element_blank(),
+         axis.text.x=element_text(colour="black"),
+         axis.text.y=element_text(colour="black"),
+         axis.ticks=element_line(colour="black"),
+        plot.margin=unit(c(1,1,1,1),"line")))
+dev.off()
+}
+write.table(specific_genes, file="specific_genes_encode.tsv",quote=FALSE, row.names=FALSE,sep="\t")
 
 
 
 
 
 
+scatter_data_melted_2 <- subset(scatter_data_melted, variable=="Median_Length.2hpf")
+outlier <- quantile(scatter_data_melted_2$value, 0.95)
+scatter_data_melted_2_tops <- subset(scatter_data_melted_2, value > outlier)
 
+
+
+scatter_data_melted_4 <- subset(scatter_data_melted, variable=="Median_Length.4hpf")
+outlier <- quantile(scatter_data_melted_4$value, 0.95)
+scatter_data_melted_4_tops <- subset(scatter_data_melted_4, value > outlier)
+
+
+scatter_data_melted_6 <- subset(scatter_data_melted, variable=="Median_Length.6hpf")
+outlier <- quantile(scatter_data_melted_6$value, 0.95)
+scatter_data_melted_6_tops <- subset(scatter_data_melted_6, value > outlier)
+
+
+
+all_top_genes <- rbind(scatter_data_melted_2_tops,scatter_data_melted_4_tops, scatter_data_melted_6_tops)
+all_top_genes = all_top_genes[!duplicated(all_top_genes$Gene_Name),]
+all_top_genes$value <- NULL
+all_top_genes$variable <- 1
+
+
+
+
+ribodep_all_unique_2hpf_tail <- ribodep_all_unique_2hpf[,c( "Gene_Name", "Median_Length")]
+ribodep_all_unique_4hpf_tail <- ribodep_all_unique_4hpf[,c( "Gene_Name", "Median_Length")]
+ribodep_all_unique_6hpf_tail <- ribodep_all_unique_6hpf[,c("Gene_Name", "Median_Length")]
+
+columns <-c("Gene_Name")
+
+
+top_2hpf <- merge(all_top_genes, ribodep_all_unique_2hpf_tail,  by.x=columns, by.y=columns)
+
+top_2hpf_4hpf <- merge(top_2hpf, ribodep_all_unique_4hpf_tail, by.x=columns, by.y=columns,suffixes = c(".2hpf", ".4hpf"))
+
+top_2hpf_4hpf_6hpf <- merge(top_2hpf_4hpf, ribodep_all_unique_6hpf_tail, by.x=columns, by.y=columns)
+top_2hpf_4hpf_6hpf$variable <- NULL
+colnames(top_2hpf_4hpf_6hpf) <- c("Gene_Name", "Median_Length.2hpf", "Median_Length.4hpf", "Median_Length.6hpf")
 
 
 

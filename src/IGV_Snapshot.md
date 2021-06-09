@@ -3,12 +3,15 @@
 
 ### Using Rep2
 ```bash
-porechop -i -o 
+porechop -i 4hpf_nonrRNA.fastq> 4hpf_nonrRNA_trimmed_porechop.fastq
 
 
 # Map these reads to Genome + rRNA
 ref=/users/enovoa/boguzhan/references/danio_rerio/zebrafish_11_sequins.fa
 minimap2 -ax splice -k14 -uf --MD $ref 2hpf_nonrRNA_trimmed_porechop.fastq | samtools view -hSb -F 3844 - >  2hpf_nonrRNA_trimmed.genome11_sequin.bam
+
+minimap2 -ax splice -k14 -uf --MD $ref 4hpf_nonrRNA_trimmed_porechop.fastq | samtools view -hSb -F 3844 - >  4hpf_nonrRNA_trimmed.genome11_sequin.bam
+
 
 minimap2 -ax splice -k14 -uf --MD $ref 4hpf_nonrRNA_trimmed.fastq | samtools view -hSb -F 3844 - >  4hpf_nonrRNA_trimmed.genome11_sequin.bam
 minimap2 -ax splice -k14 -uf --MD $ref 6hpf_nonrRNA_trimmed.fastq | samtools view -hSb -F 3844 - >  6hpf_nonrRNA_trimmed.genome11_sequin.bam
@@ -16,6 +19,7 @@ minimap2 -ax splice -k14 -uf --MD $ref 6hpf_nonrRNA_trimmed.fastq | samtools vie
 
 samtools sort 2hpf_nonrRNA_trimmed.genome11_sequin.bam 2hpf_nonrRNA_trimmed.genome11_sequin.sorted && rm 2hpf_nonrRNA_trimmed.genome11_sequin.bam && samtools index 2hpf_nonrRNA_trimmed.genome11_sequin.sorted.bam
 
+samtools sort 4hpf_nonrRNA_trimmed.genome11_sequin.bam 4hpf_nonrRNA_trimmed.genome11_sequin.sorted && rm 4hpf_nonrRNA_trimmed.genome11_sequin.bam && samtools index 4hpf_nonrRNA_trimmed.genome11_sequin.sorted.bam
 
 
 for i in *.sorted.bam;do samtools view -F 4 $i | cut -f1 | sort | uniq | wc -l;echo $i; done
