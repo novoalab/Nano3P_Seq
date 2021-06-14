@@ -47,9 +47,14 @@ ribodep_hpf6_merged.data <- rbind(ribodep_hpf6_rep1.data ,ribodep_hpf6_rep2.data
 
 
 
-tail_content_2hpf <- read.delim("cDNA123791_2hpf_tailcontent.csv")
-tail_content_4hpf <- read.delim("cDNA123791_4hpf_tailcontent.csv")
-tail_content_6hpf <- read.delim("cDNA123791_6hpf_tailcontent.csv")
+tail_content_2hpf.rep1 <- read.delim("cDNA786327_2hpf_tailcontent.csv")
+tail_content_4hpf.rep1 <- read.delim("cDNA786327_4hpf_tailcontent.csv")
+tail_content_6hpf.rep1 <- read.delim("cDNA786327_6hpf_tailcontent.csv")
+
+
+tail_content_2hpf.rep2 <- read.delim("cDNA123791_2hpf_tailcontent.csv")
+tail_content_4hpf.rep2 <- read.delim("cDNA123791_4hpf_tailcontent.csv")
+tail_content_6hpf.rep2 <- read.delim("cDNA123791_6hpf_tailcontent.csv")
 
 
 
@@ -104,12 +109,18 @@ reshape<- function(data,tails,label, content) {
 }
 
 
-ribodep_hpf2_merged.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_merged.tails_processed,"Ribodep_2hpf_merged",tail_content_2hpf)
-ribodep_hpf4_merged.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_merged",tail_content_4hpf)
-ribodep_hpf6_merged.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_merged",tail_content_6hpf)
+ribodep_hpf2_rep1.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_merged.tails_processed,"Ribodep_2hpf_rep1",tail_content_2hpf.rep1)
+ribodep_hpf4_rep1.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_rep1",tail_content_4hpf.rep1)
+ribodep_hpf6_rep1.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_rep1",tail_content_6hpf.rep1)
+
+ribodep_hpf2_rep2.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_merged.tails_processed,"Ribodep_2hpf_rep2",tail_content_2hpf.rep2)
+ribodep_hpf4_rep2.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_rep2",tail_content_4hpf.rep2)
+ribodep_hpf6_rep2.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_rep2",tail_content_6hpf.rep2)
 
 
-ribodep_all_merged <- rbind(ribodep_hpf2_merged.reshape, ribodep_hpf4_merged.reshape, ribodep_hpf6_merged.reshape)
+
+ribodep_all_rep1 <- rbind(ribodep_hpf2_rep1.reshape, ribodep_hpf4_rep1.reshape, ribodep_hpf6_rep1.reshape)
+ribodep_all_rep2 <- rbind(ribodep_hpf2_rep2.reshape, ribodep_hpf4_rep2.reshape, ribodep_hpf6_rep2.reshape)
 
 
 
@@ -119,23 +130,40 @@ ribodep_all_merged <- rbind(ribodep_hpf2_merged.reshape, ribodep_hpf4_merged.res
 filter_last_3_bases <- function(data) {
 	data_U <- subset(data, p1=="A" & p2=="A" & p3=="A" )
 	data_U$Group <- "Last3U"
-	data_U_MostCommonA <- subset(data_U, most_common_base=="T")
-	data_U_MostCommonA$Group <- "Last3U_CommonbaseA"
+	#data_U_MostCommonA <- subset(data_U, most_common_base=="T")
+	#data_U_MostCommonA$Group <- "Last3U_CommonbaseA"
 	data_rest <- subset(data, p1!="A" |p2!="A" |p3!="A")
 	data_rest$Group <- "Rest"
-	data_all <- rbind(data_U,data_U_MostCommonA,data_rest)
+	data_all <- rbind(data_U,data_rest)
 	return(data_all)
 }
 
 
-filtered_3bases_2hpf <- filter_last_3_bases(ribodep_hpf2_merged.reshape)
-filtered_3bases_4hpf <- filter_last_3_bases(ribodep_hpf4_merged.reshape)
-filtered_3bases_6hpf <- filter_last_3_bases(ribodep_hpf6_merged.reshape)
+filtered_3bases_2hpf_rep1 <- filter_last_3_bases(ribodep_hpf2_rep1.reshape)
+filtered_3bases_4hpf_rep1<- filter_last_3_bases(ribodep_hpf4_rep1.reshape)
+filtered_3bases_6hpf_rep1 <- filter_last_3_bases(ribodep_hpf6_rep1.reshape)
 
-filtered_3bases_alltimepoints <- rbind(filtered_3bases_2hpf,filtered_3bases_4hpf,filtered_3bases_6hpf)
+filtered_3bases_2hpf_rep2 <- filter_last_3_bases(ribodep_hpf2_rep2.reshape)
+filtered_3bases_4hpf_rep2<- filter_last_3_bases(ribodep_hpf4_rep2.reshape)
+filtered_3bases_6hpf_rep2 <- filter_last_3_bases(ribodep_hpf6_rep2.reshape)
 
-pdf("Tail_Lenght_Tail_Content_Boxplot_Per_Read.pdf",height=4,width=10,onefile=FALSE)
-print(ggplot(filtered_3bases_alltimepoints, aes(x=Sample, y=tail_length,colour=Group)) + 
+
+filtered_3bases_rep1_alltimepoints <- rbind(filtered_3bases_2hpf_rep1,filtered_3bases_4hpf_rep1,filtered_3bases_6hpf_rep1)
+filtered_3bases_rep2_alltimepoints <- rbind(filtered_3bases_2hpf_rep2,filtered_3bases_4hpf_rep2,filtered_3bases_6hpf_rep2)
+
+boxplot <- function(data, label){
+pdf(paste(label, "Tail_Length_Tail_Content_Boxplot_Per_Read.pdf",sep="_"),height=4,width=10,onefile=FALSE)
+print(ggplot(data, aes(x=Sample, y=tail_length,colour=Group)) + 
   geom_boxplot())
 dev.off()
+}
+
+boxplot(filtered_3bases_rep1_alltimepoints, "Rep1")
+boxplot(filtered_3bases_rep2_alltimepoints, "Rep2")
+
+
+
+
+
+
 
