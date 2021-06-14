@@ -2,6 +2,9 @@
 library(ggplot2)
 library(reshape2)
 library(stringr)
+library(EnvStats)
+library(ggpubr)
+
 #Import tail
 ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
 ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
@@ -57,6 +60,9 @@ tail_content_4hpf.rep2 <- read.delim("cDNA123791_4hpf_tailcontent.csv")
 tail_content_6hpf.rep2 <- read.delim("cDNA123791_6hpf_tailcontent.csv")
 
 
+tail_content_2hpf <- rbind(tail_content_2hpf.rep1,tail_content_2hpf.rep2) 
+tail_content_4hpf <- rbind(tail_content_4hpf.rep1,tail_content_4hpf.rep2) 
+tail_content_6hpf <- rbind(tail_content_6hpf.rep1,tail_content_6hpf.rep2) 
 
 # Reshape the tables and remove low quality reads
 reshape<- function(data,tails,label, content) {
@@ -122,8 +128,12 @@ ribodep_hpf6_rep2.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merge
 ribodep_all_rep1 <- rbind(ribodep_hpf2_rep1.reshape, ribodep_hpf4_rep1.reshape, ribodep_hpf6_rep1.reshape)
 ribodep_all_rep2 <- rbind(ribodep_hpf2_rep2.reshape, ribodep_hpf4_rep2.reshape, ribodep_hpf6_rep2.reshape)
 
+ribodep_hpf2_both.reshape <- reshape(ribodep_hpf2_merged.data,ribodepleted_merged.tails_processed,"Ribodep_2hpf_both",tail_content_2hpf)
+ribodep_hpf4_both.reshape <- reshape(ribodep_hpf4_merged.data,ribodepleted_merged.tails_processed,"Ribodep_4hpf_both",tail_content_4hpf)
+ribodep_hpf6_both.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merged.tails_processed,"Ribodep_6hpf_both",tail_content_6hpf)
 
 
+ribodep_all_both <- rbind(ribodep_hpf2_both.reshape,ribodep_hpf4_both.reshape,ribodep_hpf6_both.reshape)
 
 
 #filter for the last 3 bases 
@@ -148,22 +158,59 @@ filtered_3bases_4hpf_rep2<- filter_last_3_bases(ribodep_hpf4_rep2.reshape)
 filtered_3bases_6hpf_rep2 <- filter_last_3_bases(ribodep_hpf6_rep2.reshape)
 
 
+filtered_3bases_2hpf_both <- filter_last_3_bases(ribodep_hpf2_both.reshape)
+filtered_3bases_4hpf_both<- filter_last_3_bases(ribodep_hpf4_both.reshape)
+filtered_3bases_6hpf_both <- filter_last_3_bases(ribodep_hpf6_both.reshape)
+
+
 filtered_3bases_rep1_alltimepoints <- rbind(filtered_3bases_2hpf_rep1,filtered_3bases_4hpf_rep1,filtered_3bases_6hpf_rep1)
 filtered_3bases_rep2_alltimepoints <- rbind(filtered_3bases_2hpf_rep2,filtered_3bases_4hpf_rep2,filtered_3bases_6hpf_rep2)
+
+filtered_3bases_both_alltimepoints <- rbind(filtered_3bases_2hpf_both,filtered_3bases_4hpf_both,filtered_3bases_6hpf_both)
+
 
 boxplot <- function(data, label){
 pdf(paste(label, "Tail_Length_Tail_Content_Boxplot_Per_Read.pdf",sep="_"),height=4,width=10,onefile=FALSE)
 print(ggplot(data, aes(x=Sample, y=tail_length,colour=Group)) + 
+  stat_n_text(aes(color = Group)) + 
   geom_boxplot())
 dev.off()
 }
 
 boxplot(filtered_3bases_rep1_alltimepoints, "Rep1")
 boxplot(filtered_3bases_rep2_alltimepoints, "Rep2")
+boxplot(filtered_3bases_both_alltimepoints, "Both")
 
 
 
+boxplot_stats <- function(data, label){
+pdf(paste(label, "Tail_Length_Tail_Content_Boxplot_Per_Read.pdf",sep="_"),height=4,width=10,onefile=FALSE)
+print(ggplot(data, aes(x=Sample, y=tail_length,colour=Group)) + 
+  stat_n_text(aes(color = Group)) + 
+  stat_compare_means(comparisons = my_comparisons, label.y = c(5, 5.5, 6))+
+  geom_boxplot())
+dev.off()
+}
+
+boxplot(filtered_3bases_rep1_alltimepoints, "Rep1")
+boxplot(filtered_3bases_rep2_alltimepoints, "Rep2")
+boxplot(filtered_3bases_both_alltimepoints, "Both")
+
+
+my_comparisons <- list( c("Last3U","Rest"))
+
+pdf(paste("Both_Rep_Tail_Length_Tail_Content_Boxplot_Per_Read.pdf",sep="_"),height=4,width=10,onefile=FALSE)
+    print(ggplot(filtered_3bases_both_alltimepoints, aes(x = Group, y = tail_length)) + 
+      geom_boxplot(aes(fill = Group),position = position_dodge(0.9)) +
+      ylab("Tail Length (nt)")+
+      stat_compare_means(comparisons = my_comparisons, label.y = c(310))+
+      facet_wrap(~Sample,nrow=1)+
+      stat_n_text() + 
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
 
 
 
-
+                
