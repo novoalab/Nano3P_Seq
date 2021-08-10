@@ -1,4 +1,4 @@
-# Nano3P_seq
+# Nano3P-seq
 Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
 ## General command line steps used to analyze Nano3P-seq
@@ -11,3 +11,8 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 ### 6. Post-processing of polyA tail length estimations 
 ### 7. Analysis of tail composition
 ### 8. Visualizing the results
+
+## Software versions used
+
+## Citation
+
