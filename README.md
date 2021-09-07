@@ -11,6 +11,7 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 ### 6. Post-processing of polyA tail length estimations 
 ### 7. Analysis of tail composition
 ### 8. Visualizing the results
+### 9. BONUS: Getting your poly(A) tail ends to be visible in IGV
 
 ## Software versions used
 
