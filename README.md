@@ -15,5 +15,16 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 
 ## Software versions used
 
+* Guppy version XX
+* minimap2 version XX
+* R version XX
+* Nanopolish version XX
+* TailfindR version XX
+
 ## Citation
+If you find this work useful, please cite: 
+
+Begik O, Liu H, Delgado-Tejedor A, Kontur C, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore sequencing. bioRxiv 2021. doi: XXX. 
+
+
 
