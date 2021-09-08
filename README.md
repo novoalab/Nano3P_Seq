@@ -1,5 +1,5 @@
 # Nano3P-seq
-Step-by-step Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
+Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
 ## General command line steps used to analyze Nano3P-seq
 
