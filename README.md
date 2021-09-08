@@ -1,12 +1,18 @@
 # Nano3P-seq
-Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
+Step-by-step Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
 ## General command line steps used to analyze Nano3P-seq
 
 ### 1. Base-calling, demultiplexing, mapping
+Base-calling and demultiplexing with Guppy:
 ```
 
 ```
+Mapping with minimap2:
+```
+
+```
+
 ### 2. Filtering mapped reads based on annotations
 ```
 
@@ -28,11 +34,26 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 
 ```
 ### 7. Analysis of tail composition
+```
+
+```
 ### 8. Visualizing the results
+
 #### a) Scatterplots of poly(A) tail length estimations across biological replicates
+```
+
+```
 #### b) Dotplots of poly(A) tail length estimations across time points 
+```
+
+```
 #### c) Line plots of transcript abundances across time points
+```
+
+```
 ### 9. BONUS: Getting your poly(A) tail ends to be visible in IGV
+
+
 
 ## Software versions used
 
