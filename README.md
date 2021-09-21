@@ -196,30 +196,32 @@ cat  data.restRNAs_FINAL.bed data.smallRNAs_FINAL.bed data.miRNAs_FINAL.bed > da
 
 
 
-
-
-### 4. Assigning reads to transcripts/isoforms
+### 3. Assigning reads to transcripts/isoforms
 ```bash
+#Prerequisite : isoquant.py tool
 python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_type nanopore -o OUTPUT_FOLDER
 ```
 
-### 5. Per-read poly(A) tail length estimations
-```
+### 4. Per-read poly(A) tail length estimations
+```R
+#Prerequisite : tailfindR tool
+tails <- find_tails(fast5_dir ='fast5_location',
+save_dir = './',
+csv_filename = 'Tails.csv' ,
+num_cores = 10)
 
 ```
-### 6. Post-processing of polyA tail length estimations 
-```
+### 5. Post-processing of polyA tail length estimations 
+```bash
+Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv label
 
 ```
-### 7. Analysis of tail composition
-```
 
-```
-### 8. Visualizing the results
+### 7. Visualizing the results
 
 #### a) Scatterplots of poly(A) tail length estimations across biological replicates
-```
-
+```bash
+Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep2.tails Rep1.bed Rep2.bed label
 ```
 #### b) Dotplots of poly(A) tail length estimations across time points 
 ```
