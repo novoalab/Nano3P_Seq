@@ -1,15 +1,19 @@
-
+#Library needed
+library(ggplot2)
+library(ggbeeswarm)
+library(EnvStats)
+library(ggpubr)
 
 # Reading arguments from command line
 args = commandArgs(trailingOnly=TRUE)
 
 #Arguments
-rep1_tail <- read.delim(args[1],sep=",")  #1st variable
-rep2_tail <- read.delim(args[2],sep=",")  #2nd variable
+tail <- read.delim(args[1],sep=",")  #1st variable
 
 
-rep1_bed <- read.delim(args[3], header=FALSE) # 3rd variable
-rep2_bed <- read.delim(args[4], header=FALSE) # 4th variable
+bed_2hpf <- read.delim(args[2], header=FALSE) # 2nd variable
+bed_4hpf <- read.delim(args[3], header=FALSE) # 3rd variable
+bed_6hpf <- read.delim(args[4], header=FALSE) # 4th variable
 
 
 label <- as.character(args[5])  #5th variable
@@ -35,9 +39,7 @@ manipulate_tail<- function(data) {
   return(data_filt_T)
 }
 
-rep1_tail.processed <- manipulate_tail(rep1_tail)
-rep2_tail.processed  <- manipulate_tail(rep2_tail)
-
+tail.processed <- manipulate_tail(tail)
 
 
 
@@ -56,50 +58,42 @@ reshape<- function(data,tails,label) {
   #Merge the data with the stats tabls
   merged2 <- merge(merged, ourdata2, by.x=c("Gene_Name"), by.y=c("Gene_Name"))
   merged2$Gene_Count_Norm <- merged2$Gene_Count/coverage *10000
-  merged2$Sample <- label
+  merged2$Time_point <- label
   merged3 <-  merged2[!duplicated(merged2[c("Gene_Name")]),]
   return(merged3)
 }
 
 
-rep1.processed <- reshape(rep1_bed,rep1_tail.processed,"Rep1")
-rep2.processed <- reshape(rep2_bed,rep2_tail.processed,"Rep2")
+processed.2hpf <- reshape(bed_2hpf,tail.processed,"2hpf")
+processed.4hpf <- reshape(bed_4hpf,tail.processed,"4hpf")
+processed.6hpf <- reshape(bed_6hpf,tail.processed,"6hpf")
 
 
 
+comparison_all <- rbind(processed.2hpf,processed.4hpf,processed.6hpf)
 
 
-# Merge two Replicates
-merge_two_rep <- function(rep1, rep2) {
-	rep1_unique <-   rep1[!duplicated(rep1[c("Gene_Name", "Sample")]),]
-	rep2_unique <-   rep2[!duplicated(rep2[c("Gene_Name", "Sample")]),]
-	data_merged <- merge(rep1_unique,rep2_unique, by.x="Gene_Name", by.y="Gene_Name" )
-	data_merged_mRNA <-subset(data_merged, Gene_Type.x =="protein_coding")
-	data_merged_mRNA_min30 <- subset(data_merged_mRNA, Gene_Count.x > 20 & Gene_Count.y >20)
-	return(data_merged_mRNA_min30)
-}
-
-both_reps_merged <- merge_two_rep(rep1.processed,rep2.processed)
+my_comparisons <- list( c("2hpf", "4hpf"), c("2hpf", "6hpf"), c("4hpf", "6hpf") )
 
 
+pdf(file= paste(label, "dotplot.pdf", sep="_"),height=10,width=8,onefile=FALSE)
+      print(ggplot(comparison_all, aes(x=Time_point, y=Median_Length)) + 
+        geom_quasirandom(varwidth = TRUE, aes(color=Time_point))+
+        geom_boxplot(aes(alpha=0), outlier.shape=NA)+
+        stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                geom = "crossbar", width = 0.7, color="#c06c84")+
+        theme_bw()+
+        ylim(0,180)+
+        stat_compare_means(comparisons = my_comparisons, label.y = c(150, 160, 170))+
+        #facet_wrap(~Time_point,nrow=1)+
+        ggtitle("Zebrafish Embryo")+
+        xlab("Time Points")+
+        ylab("Tail length") +
+        theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
+                axis.title=element_text(size=17,face="bold"),
+                legend.title = element_text(size = 20),
+                legend.text = element_text(color = "black", size=15)))
+    dev.off()
 
 
 
-plot_denscols_with_corr_pearson<-function(pdfname,my_x,my_y,xlab,ylab) {
-	pdf(file=paste(pdfname, "_pearson.pdf",sep=""), height=6, width=6)
-	dcols<-densCols(my_x,my_y, colramp=colorRampPalette(blues9[-(1:3)]))
-	plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab)
-	title(main=pdfname, col.main="black", font.main=4)
-	#abline(v=0, lty=2)
-	# Correlation
-	test<-cor.test(my_x,my_y, method="pearson")
-	print(test)
-	cor222<-paste("Pearson's p =",round(as.numeric(test$estimate),3))
-	#pval<-paste("Pval =",test$p.value)
-	mtext(paste(cor222))
-	#mtext(paste(cor222,pval,sep=" ; ")) #Print the subtitle with the dataset correlation
-	dev.off()
-}
-
-
-plot_denscols_with_corr_pearson(paste(label,"Rep1_Rep2",sep="_"), both_reps_merged$Median_Length.x , both_reps_merged$Median_Length.y, "Rep1_Median_Length", "Rep2_Median_Length" )

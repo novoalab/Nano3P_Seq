@@ -224,8 +224,8 @@ Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv label
 Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep2.tails Rep1.bed Rep2.bed label
 ```
 #### b) Dotplots of poly(A) tail length estimations across time points 
-```
-
+```bash
+Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.bed 6hpf.bed
 ```
 #### c) Line plots of transcript abundances across time points
 ```
@@ -238,13 +238,12 @@ Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep
 ## Software versions used
 
 * Guppy version 3.6.1
-* minimap2 version XX
-* samtools version XX
-* R version XX
-* Nanopolish version XX
-* TailfindR version XX
+* minimap2 version 2.17
+* samtools version 0.1.19
+* R version 3.6.0
+* TailfindR v1
 * picard.jar
-* bedtools
+* bedtools 2.29.1
 * Isoquant
 
 ## Citation
