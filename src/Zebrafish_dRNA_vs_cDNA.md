@@ -70,6 +70,8 @@ all <- rbind(nano3p_ribo_hpf4.reshape, nano3p_pA_hpf4.reshape,drna_hpf4.reshape 
 
 
 
+
+
 #To look into rRNAs 
 drna_hpf4.rRNA <- subset(drna_hpf4.reshape, Gene_Type=="rRNA")
   drna_hpf4.rRNA2 <-  drna_hpf4.rRNA [!duplicated(drna_hpf4.rRNA [c("Gene_Name", "Sample")]),]
@@ -146,6 +148,16 @@ dev.off()
 
 nano3p_pA_hpf4.unique <-  nano3p_pA_hpf4.reshape[!duplicated(nano3p_pA_hpf4.reshape[c("Gene_Name", "Sample")]),]
 drna_hpf4.unique <-  drna_hpf4.reshape[!duplicated(drna_hpf4.reshape[c("Gene_Name", "Sample")]),]
+
+
+
+
+
+write.table(nano3p_pA_hpf4.unique, file="Zebrafish_Nano3P_PolyASelection_Counts.tsv", sep="\t", quote=FALSE,row.names=FALSE)
+
+write.table(drna_hpf4.unique, file="Zebrafish_dRNA_PolyASelection_Counts.tsv", sep="\t", quote=FALSE,row.names=FALSE)
+
+
 
 
 

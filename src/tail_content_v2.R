@@ -136,6 +136,9 @@ ribodep_hpf6_both.reshape <- reshape(ribodep_hpf6_merged.data,ribodepleted_merge
 ribodep_all_both <- rbind(ribodep_hpf2_both.reshape,ribodep_hpf4_both.reshape,ribodep_hpf6_both.reshape)
 
 
+
+
+
 #filter for the last 3 bases 
 filter_last_3_bases <- function(data) {
 	data_U <- subset(data, p1=="A" & p2=="A" & p3=="A" )
@@ -213,4 +216,431 @@ pdf(paste("Both_Rep_Tail_Length_Tail_Content_Boxplot_Per_Read.pdf",sep="_"),heig
 
 
 
-                
+  maternal <- read.delim("264_top_maternal_decay.txt")
+  maternal$Group <- "Maternal"
+
+
+
+### check the reads 
+check_reads <- function(data, label) {
+  last3U <- subset(data, Group=="Last3U")
+  rest <- subset(data, Group=="Rest")
+  last3U_count <- as.data.frame(table(last3U$Gene_Name))
+  colnames(last3U_count) <- c("Gene_Name", "Count_Last3U")
+  rest_count <- as.data.frame(table(rest$Gene_Name))
+  colnames(rest_count) <- c("Gene_Name", "Count_Rest")
+  merged <- merge(last3U_count, rest_count, by.x="Gene_Name", by.y="Gene_Name")
+  merged$count <- merged$Count_Last3U + merged$Count_Rest
+  merged$Ratio_Last3U <- merged$Count_Last3U/ merged$count
+  merged$Ratio_Rest<- merged$Count_Rest/ merged$count
+  merged2 <- subset(merged,count>10)
+  merged2$Sample <- label
+  merged3 <- merge(merged2, maternal,all.x=TRUE, by.x="Gene_Name", by.y="Ensembl_Gene_ID")
+  merged3$Group[is.na(merged3$Group)] <- "Rest"
+  merged3$Ensembl_Transcript_ID <- NULL
+  merged3$Percentage <-  merged3$Ratio_Last3U*100
+  merged3<- merged3[!duplicated(merged3$Gene_Name), ]
+  return(merged3)
+}
+
+read_count_2hpf <- check_reads(filtered_3bases_2hpf_both,"2HPF" )
+read_count_4hpf <- check_reads(filtered_3bases_4hpf_both,"4HPF" )
+read_count_6hpf <- check_reads(filtered_3bases_6hpf_both,"6HPF" )
+
+read_count_all <- rbind(read_count_2hpf, read_count_4hpf, read_count_6hpf)
+
+
+read_count_2hpf_rep1 <- check_reads(filtered_3bases_2hpf_rep1,"2HPF_rep1" )
+read_count_2hpf_rep2 <- check_reads(filtered_3bases_2hpf_rep2,"2HPF_rep2" )
+
+
+
+read_count_4hpf_rep1 <- check_reads(filtered_3bases_4hpf_rep1,"4HPF_rep1" )
+read_count_4hpf_rep2 <- check_reads(filtered_3bases_4hpf_rep2,"4HPF_rep2" )
+
+
+read_count_6hpf_rep1 <- check_reads(filtered_3bases_6hpf_rep1,"6HPF_rep1" )
+read_count_6hpf_rep2 <- check_reads(filtered_3bases_6hpf_rep2,"6HPF_rep2" )
+
+library(ggrepel)
+scatter_plot <- function(data, label) {
+  pdf(paste(label, "Tail_Content_Ratios_Min10Cov.pdf",sep="_"),height=5,width=5,onefile=FALSE)
+  print(ggplot(data, aes(Ratio_Rest,Ratio_Last3U,colour = factor(Group)))+
+  #geom_text_repel(data=subset(data, Ratio_Last3U>0.1),aes(y = Ratio_Last3U, label = Gene_Name), color = "black", size=6)+
+  geom_point())
+  dev.off()
+}
+
+scatter_plot(read_count_2hpf,"2HPF")
+scatter_plot(read_count_4hpf,"4HPF")
+scatter_plot(read_count_6hpf,"6HPF")
+
+
+##Overall Tail comparison (Single transcript)
+density_plot <- function(data, label) {
+  pdf(file=paste(label, "Tail_Content_Ratios_Min10Cov_Density.pdf",sep="_"),height=3,width=5, onefile=FALSE)
+  print(ggplot(data, aes(x=Ratio_Last3U, color=Group)) +
+  geom_density()+
+  theme_bw()+
+  xlab("Last3U Ratio")+
+  ylab("Density"))
+  dev.off()
+}
+
+
+density_plot(read_count_2hpf,"2HPF")
+density_plot(read_count_4hpf,"4HPF")
+density_plot(read_count_6hpf,"6HPF")
+
+density_plot(read_count_2hpf_rep1,"2HPF_rep1")
+density_plot(read_count_2hpf_rep2,"2HPF_rep2")
+
+density_plot(read_count_4hpf_rep1,"4HPF_rep1")
+density_plot(read_count_4hpf_rep2,"4HPF_rep2")
+
+
+density_plot(read_count_6hpf_rep1,"6HPF_rep1")
+density_plot(read_count_6hpf_rep2,"6HPF_rep2")
+
+  
+#my_comparisons <- list( c("2HPF", "4HPF"), c("4HPF", "6HPF"), c("2HPF", "6HPF") )
+boxplot <- function(data,label) {
+  pdf(file=paste(label, "Tail_Content_Ratios_Min10Cov_boxplot.pdf",sep="_"),height=3,width=10, onefile=FALSE)
+    print(ggplot(data, aes(x = Group, y = Percentage+0.1 )) + 
+      geom_boxplot(aes(fill = Group),position = position_dodge(0.9)) +
+      ylab("Last3U Percentage")+
+      stat_compare_means()+
+      facet_wrap(~Sample,nrow=1)+
+      #facet_zoom(ylim = c(0, 0.1))+
+      stat_n_text() + 
+      scale_y_continuous(trans = 'log2')+
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
+}
+
+
+boxplot(read_count_all, "AllTimepoints")
+
+
+library(ggbeeswarm)
+
+
+dotplot <- function(data,label) {
+pdf(file=paste(label, "Tail_Content_Ratios_Min10Cov_dotplot.pdf",sep="_"),height=6,width=14,onefile=FALSE)
+      print(ggplot(data, aes(x=Group, y=Percentage+0.1, fill=Group)) + 
+        geom_quasirandom(varwidth = TRUE, aes())+
+        geom_boxplot(aes(alpha=0), outlier.shape=NA)+
+        stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                geom = "crossbar", width = 0.7, color="#c06c84")+
+        stat_n_text()+
+        theme_bw()+
+        ggtitle(label)+
+        facet_wrap(~Sample,nrow=1)+
+        xlab("Group")+
+        scale_y_continuous(trans = 'log2')+
+        ylab("log scaled (pU Percentage)") +
+        theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
+                axis.title=element_text(size=17,face="bold"),
+                legend.title = element_text(size = 20),
+                legend.text = element_text(color = "black", size=15)))
+    dev.off()
+}
+dotplot(read_count_all, "AllTimepoints")
+
+
+
+  
+#my_comparisons <- list( c("2HPF", "4HPF"), c("4HPF", "6HPF"), c("2HPF", "6HPF") )
+violinplot <- function(data,label) {
+  pdf(file=paste(label, "Tail_Content_Ratios_Min10Cov_violinplot.pdf",sep="_"),height=3,width=10, onefile=FALSE)
+    print(ggplot(data, aes(x = Group, y = Percentage+0.1 )) + 
+      geom_violin(aes(fill = Group),position = position_dodge(0.9)) +
+      ylab("Last3U Percentage")+
+      stat_compare_means()+
+      facet_wrap(~Sample,nrow=1)+
+      #facet_zoom(ylim = c(0, 0.1))+
+      stat_n_text() + 
+      scale_y_continuous(trans = 'log2')+
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
+}
+
+
+violinplot(read_count_all, "AllTimepoints")
+
+
+
+
+
+
+##Overall Tail comparison (Single transcript)
+density_plot_facet <- function(data, label) {
+  pdf(file=paste(label, "Tail_Content_Ratios_Min10Cov_Density.pdf",sep="_"),height=3,width=7, onefile=FALSE)
+  print(ggplot(data, aes(x=Percentage+0.1, color=Group)) +
+  geom_density()+
+  facet_wrap(~Sample,nrow=1)+
+  scale_x_continuous(trans = 'log2')+
+  theme_bw()+
+  xlab("log scaled (pU Percentage)")+
+  ylab("Density"))
+  dev.off()
+}
+density_plot_facet(read_count_all, "AllTimepoints")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Rep1 vs Rep2
+
+
+rep1_vs_rep2_2hpf <- merge(read_count_2hpf_rep1[,c("Gene_Name","Ratio_Last3U","Ratio_Rest")],read_count_2hpf_rep2[,c("Gene_Name","Ratio_Last3U","Ratio_Rest")],by.x="Gene_Name", by.y="Gene_Name")
+
+
+
+scatter_plot_rep1_vs_rep2 <- function(data, label) {
+  pdf(paste(label, "Tail_Content_Ratios_Min10Cov_Rep1vsRep2.pdf",sep="_"),height=5,width=5,onefile=FALSE)
+  print(ggplot(data, aes(Ratio_Last3U.x,Ratio_Last3U.y))+
+  geom_point())
+  dev.off()
+}
+
+scatter_plot_rep1_vs_rep2(rep1_vs_rep2_2hpf,"2HPF_Rep1_vs_Rep2")
+
+
+#VENN DIAGRAM
+
+read_count_2hpf_rep1_min20 <- subset(read_count_2hpf_rep1,count >20 )
+read_count_2hpf_rep2_min20 <- subset(read_count_2hpf_rep2,count >20 )
+
+read_count_4hpf_rep1_min20 <- subset(read_count_4hpf_rep1,count >20 )
+read_count_4hpf_rep2_min20 <- subset(read_count_4hpf_rep2,count >20 )
+
+read_count_6hpf_rep1_min20 <- subset(read_count_6hpf_rep1,count >20 )
+read_count_6hpf_rep2_min20 <- subset(read_count_6hpf_rep2,count >20 )
+
+
+read_count_2hpf_rep1_min20_2percent <- subset(read_count_2hpf_rep1_min20, Ratio_Last3U > 0.02)
+read_count_2hpf_rep2_min20_2percent <- subset(read_count_2hpf_rep2_min20, Ratio_Last3U > 0.02)
+
+read_count_4hpf_rep1_min20_2percent <- subset(read_count_4hpf_rep1_min20, Ratio_Last3U > 0.02)
+read_count_4hpf_rep2_min20_2percent <- subset(read_count_4hpf_rep2_min20, Ratio_Last3U > 0.02)
+
+read_count_6hpf_rep1_min20_2percent <- subset(read_count_6hpf_rep1_min20, Ratio_Last3U > 0.02)
+read_count_6hpf_rep2_min20_2percent <- subset(read_count_6hpf_rep2_min20, Ratio_Last3U > 0.02)
+
+library(VennDiagram)
+
+ list_2hpf_rep1_rep2 <- list(read_count_2hpf_rep1_min20_2percent[,1],read_count_2hpf_rep2_min20_2percent[,1] )
+ list_4hpf_rep1_rep2 <- list(read_count_4hpf_rep1_min20_2percent[,1],read_count_4hpf_rep2_min20_2percent[,1] )
+ list_6hpf_rep1_rep2 <- list(read_count_6hpf_rep1_min20_2percent[,1],read_count_6hpf_rep2_min20_2percent[,1] )
+
+
+
+
+venn_reps <- function(data, label){
+venn.diagram(x =data,
+     category.names = c("Rep1" , "Rep2"),
+     filename = paste(label,'Rep1_vs_Rep2_Last3U_Genes.tiff',sep="_"),
+     lwd = 2,
+     lty = 'blank',
+     fill = c("red", "blue"),
+     output=TRUE,
+       # Output features
+      imagetype="tiff" ,
+      height = 500 , 
+      width = 500 , 
+      resolution = 500,
+      compression = "lzw",
+     # Numbers
+      cex = .3,
+      fontface = "bold",
+      fontfamily = "sans",
+      # Set names
+      cat.cex = 0.2,
+      cat.fontface = "bold",
+      cat.default.pos = "outer",
+      #cat.pos = c(-27, 27),
+      #cat.dist = c(0.055, 0.055),
+      #cat.fontfamily = "sans",
+      #rotation = 1
+  )
+}
+
+venn_reps(list_2hpf_rep1_rep2, "2hpf")
+venn_reps(list_4hpf_rep1_rep2, "4hpf")
+venn_reps(list_6hpf_rep1_rep2, "6hpf")
+
+
+
+
+
+
+
+
+# 2 ,4 and 6 hpf gene group overlap
+
+read_count_2hpf_min20 <- subset(read_count_2hpf,count >20 )
+read_count_4hpf_min20 <- subset(read_count_4hpf,count >20 )
+read_count_6hpf_min20 <- subset(read_count_6hpf,count >20 )
+
+
+read_count_2hpf_min20_2percent <- subset(read_count_2hpf_min20, Ratio_Last3U > 0.02)
+read_count_4hpf_min20_2percent <- subset(read_count_4hpf_min20, Ratio_Last3U > 0.02)
+read_count_6hpf_min20_2percent <- subset(read_count_6hpf_min20, Ratio_Last3U > 0.02)
+
+library(VennDiagram)
+
+ List_all <- list(read_count_2hpf_min20_2percent[,1],read_count_4hpf_min20_2percent[,1],read_count_6hpf_min20_2percent[,1] )
+
+
+significant_pU_genes <- as.data.frame(Reduce(union, List_all))
+colnames(significant_pU_genes) <- "Gene_Name"
+
+
+
+ Reduce(intersect, List_all)
+
+
+
+venn.diagram(x =List_all,
+     category.names = c("2HPF" , "4HPF", "6HPF"),
+     filename = 'Venn_All_Timepoints_PolyU_2percent_min20cov.tiff',
+     lwd = 2,
+     lty = 'blank',
+     fill = c("#f5a25d", "#bedbbb", "#776d8a"),
+     output=TRUE,
+     # Output features
+    imagetype="tiff" ,
+    height = 6000 , 
+    width = 6000 , 
+    resolution = 6000,
+    compression = "lzw",
+   # Numbers
+    cex = .5,
+    fontface = "bold",
+    fontfamily = "sans",
+    # Set names
+    cat.cex = 0.3,
+    cat.fontface = "bold",
+    cat.default.pos = "outer",
+    cat.pos = c(-25, 0, 25 ),
+    cat.dist = c(0.15, 0.15 ,-0.5),
+    cat.fontfamily = "sans",
+    #rotation = 1
+)
+
+
+
+
+##### LINE PLOT FOR THESE GENES
+
+rep1_vs_rep2_2hpf <- merge(read_count_2hpf_rep1[,c("Gene_Name","Percentage")],read_count_2hpf_rep2[,c("Gene_Name","Percentage")],by.x="Gene_Name", by.y="Gene_Name")
+rep1_vs_rep2_4hpf <- merge(read_count_4hpf_rep1[,c("Gene_Name","Percentage")],read_count_4hpf_rep2[,c("Gene_Name","Percentage")],by.x="Gene_Name", by.y="Gene_Name")
+rep1_vs_rep2_6hpf <- merge(read_count_6hpf_rep1[,c("Gene_Name","Percentage")],read_count_6hpf_rep2[,c("Gene_Name","Percentage")],by.x="Gene_Name", by.y="Gene_Name")
+
+
+
+rep1_vs_rep2_2hpf$Mean_Percentage <- (rep1_vs_rep2_2hpf$Percentage.x + rep1_vs_rep2_2hpf$Percentage.y)/2
+rep1_vs_rep2_4hpf$Mean_Percentage <- (rep1_vs_rep2_4hpf$Percentage.x + rep1_vs_rep2_4hpf$Percentage.y)/2
+rep1_vs_rep2_6hpf$Mean_Percentage <- (rep1_vs_rep2_6hpf$Percentage.x + rep1_vs_rep2_6hpf$Percentage.y)/2
+
+
+significant_pU_genes_2hpf <- merge(significant_pU_genes, rep1_vs_rep2_2hpf, by.x="Gene_Name", by.y="Gene_Name")
+significant_pU_genes_24hpf <- merge(significant_pU_genes_2hpf, rep1_vs_rep2_4hpf, by.x="Gene_Name", by.y="Gene_Name")
+significant_pU_genes_246hpf <- merge(significant_pU_genes_24hpf, rep1_vs_rep2_6hpf, by.x="Gene_Name", by.y="Gene_Name")
+
+significant_pU_genes_246hpf_final <- significant_pU_genes_246hpf[,c("Gene_Name", "Mean_Percentage.x", "Mean_Percentage.y", "Mean_Percentage")]
+
+colnames(significant_pU_genes_246hpf_final) <- c("Gene_Name", "Percentage_2hpf", "Percentage_4hpf", "Percentage_6hpf")
+
+
+  maternal <- read.delim("264_top_maternal_decay.txt")
+  maternal$Group <- "Maternal"
+
+  significant_pU_genes_246hpf_maternal <- merge(significant_pU_genes_246hpf_final, maternal,all.x=TRUE, by.x="Gene_Name", by.y="Ensembl_Gene_ID")
+  significant_pU_genes_246hpf_maternal$Group[is.na(significant_pU_genes_246hpf_maternal$Group)] <- "Rest"
+  significant_pU_genes_246hpf_maternal$Ensembl_Transcript_ID <- NULL
+
+significant_pU_genes_246hpf_maternal_melted <- melt(significant_pU_genes_246hpf_maternal)
+
+
+
+line_plot_pU <- function(data, label) {
+pdf(file=paste(label,"pU_percentage_significant_genes.pdf",sep="_"),height=3,width=6,onefile=FALSE)
+  print(ggplot(data=data , aes(x=variable, y=value, group=Gene_Name, color=Group)) +
+    geom_line()+
+   # geom_line(data=subset(data, Replicate=="Rep2"))+
+    theme_bw()+
+   # scale_y_continuous(trans = 'log2')+
+    ylab("pU Percentage"))
+    dev.off()
+}
+
+
+line_plot_pU(significant_pU_genes_246hpf_maternal_melted, "Mean_all_time")
+
+
+
+  print(ggplot(data=data , aes(x=variable, y=count_percentage, group=value, color=value)) +
+
+
+
+
+
+test <- subset(subs_last3U, Read_ID == "88012a53-f012-4318-90a7-cdd6213066fe")
+
+
+88012a53-f012-4318-90a7-cdd6213066fe
+
+
+#### EXTRACT READS FOR THE LAST3U 
+
+extract_reads_last3U <- function(data,gene,label) {
+  subs <- subset(data, Gene_Name==gene)
+  subs_last3U <-  subset(data, Group=="Last3U")
+  subs_toextract <- subs_last3U[,c("Read_ID")]
+  write.table(subs_toextract, file=paste(gene,label,"reads.tsv", sep="_"), quote=FALSE, col.names=FALSE, row.names=FALSE)
+}
+
+
+extract_reads_last3U(filtered_3bases_2hpf_both,"ENSDARG00000006580","2HPF")
+
+
+
+
+java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
+       I=2hpf_nonrRNA_both_trimmed_porechop.genome11_sequin.sorted.bam \
+       O=ENSDARG00000006580_2HPF.bam\
+       READ_LIST_FILE=ENSDARG00000006580_2HPF_reads.tsv\
+       FILTER=includeReadList
+
+samtools index ENSDARG00000006580_2HPF.bam
+
+
+
+
+
+
+java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
+       I=2hpf.genome11_sequin.restRNAs.bam \
+       O=ENSDARG00000006580_2HPF_untrimmed.bam\
+       READ_LIST_FILE=ENSDARG00000006580_2HPF_reads.tsv\
+       FILTER=includeReadList
+
+samtools index ENSDARG00000006580_2HPF_untrimmed.bam
+

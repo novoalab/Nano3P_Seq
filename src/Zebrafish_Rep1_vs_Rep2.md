@@ -298,7 +298,7 @@ merge_two_rep <- function(rep1, rep2) {
 	rep2_unique <-   rep2[!duplicated(rep2[c("Gene_Name", "Sample")]),]
 	data_merged <- merge(rep1_unique,rep2_unique, by.x="Gene_Name", by.y="Gene_Name" )
 	data_merged_mRNA <-subset(data_merged, Gene_Type.x =="protein_coding")
-	data_merged_mRNA_min30 <- subset(data_merged_mRNA, Gene_Count.x > 30 & Gene_Count.y >30)
+	data_merged_mRNA_min30 <- subset(data_merged_mRNA, Gene_Count.x > 20 & Gene_Count.y >20)
 	return(data_merged_mRNA_min30)
 }
 

@@ -13,7 +13,8 @@ library(dplyr)
 library(ggridges)
 library(reshape2)
 library(EnvStats)
-
+library(ggpubr)
+library(reshape2)
 #Import tail
 ribodepleted_rep1.tails <- read.delim("cDNA786327_tails.csv", sep=",")
 ribodepleted_rep2.tails <- read.delim("cDNA123791_tails.csv", sep=",")
@@ -110,6 +111,7 @@ bartel_hpf6.data <- read.delim("GSE52809_Dre_mock_6hpf.txt")
 bartel_merging <- function(data_bartel,data_us, threshold) {
    id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
    data_bartel2 <- data_bartel[,c("Transcript.ID", "Mean.TL", "Median.TL")] 
+   data_bartel2 <- subset(data_bartel2, Median.TL >=0)
    data_bartel3 <- merge(data_bartel2, id_convert, by.x="Transcript.ID", by.y="Transcript.stable.ID")
    #Take unique gene names for our data
    data_us2 <-  data_us[!duplicated(data_us[c("Gene_Name", "Sample")]),]
@@ -156,13 +158,14 @@ scatter_bartel_comparison(bartel_hpf6.processed, "6HPF")
 plot_denscols_with_corr_pearson<-function(pdfname,my_x,my_y,xlab,ylab) {
   pdf(file=paste(pdfname, "_pearson.pdf",sep=""), height=6, width=6)
   dcols<-densCols(my_x,my_y, colramp=colorRampPalette(blues9[-(1:3)]))
-  plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab)
+  plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab,xlim=c(0,160), ylim=c(0,160))
   title(main=pdfname, col.main="black", font.main=4)
+  abline(0,1,lwd=3)
   #abline(v=0, lty=2)
   # Correlation
   test<-cor.test(my_x,my_y, method="pearson")
   print(test)
-  cor222<-paste("Pearson's p =",round(as.numeric(test$estimate),3))
+  cor222<-paste("Pearson's r =",round(as.numeric(test$estimate),3))
   #pval<-paste("Pval =",test$p.value)
   mtext(paste(cor222))
   #mtext(paste(cor222,pval,sep=" ; ")) #Print the subtitle with the dataset correlation
@@ -175,6 +178,207 @@ plot_denscols_with_corr_pearson("PALSeq_vs_Nano3PSeq 4HPF", bartel_hpf4.processe
 
 plot_denscols_with_corr_pearson("PALSeq_vs_Nano3PSeq 6HPF", bartel_hpf6.processed$Median_Length , bartel_hpf6.processed$Median.TL, "NanoTailCapture (this work) Median Tail Length", "PAL-Seq (Subtelny et al 2014) Median Tail Length" )
 
+
+
+
+
+
+### DOTPLOTS 
+bartel_hpf2.processed$Time_point <- "2HPF"
+bartel_hpf4.processed$Time_point <- "4HPF"
+bartel_hpf6.processed$Time_point <- "6HPF"
+
+comparison_all <- rbind(bartel_hpf2.processed,bartel_hpf4.processed,bartel_hpf6.processed )
+
+
+my_comparisons <- list( c("2HPF", "4HPF"), c("2HPF", "6HPF"), c("4HPF", "6HPF") )
+
+
+    pdf(file= "Bartel_Dotplot.pdf",height=10,width=8,onefile=FALSE)
+      print(ggplot(comparison_all, aes(x=Time_point, y=Median.TL)) + 
+        geom_quasirandom(varwidth = TRUE, aes(color=Time_point))+
+        geom_boxplot(aes(alpha=0), outlier.shape=NA)+
+        stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                geom = "crossbar", width = 0.7, color="#c06c84")+
+        theme_bw()+
+        ylim(0,180)+
+        stat_compare_means(comparisons = my_comparisons, label.y = c(150, 160, 170))+
+        #facet_wrap(~Time_point,nrow=1)+
+        ggtitle("Zebrafish Embryo")+
+        xlab("Time Points")+
+                ylab("Tail length") +
+        theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
+                axis.title=element_text(size=17,face="bold"),
+                legend.title = element_text(size = 20),
+                legend.text = element_text(color = "black", size=15)))
+    dev.off()
+  
+    pdf(file= "Begik_Dotplot.pdf",height=10,width=8,onefile=FALSE)
+      print(ggplot(comparison_all, aes(x=Time_point, y=Median_Length)) + 
+        geom_quasirandom(varwidth = TRUE, aes(color=Time_point))+
+        geom_boxplot(aes(alpha=0), outlier.shape=NA)+
+        stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+                geom = "crossbar", width = 0.7, color="#c06c84")+
+        theme_bw()+
+        ylim(0,180)+
+        stat_compare_means(comparisons = my_comparisons, label.y = c(150, 160, 170))+
+        #facet_wrap(~Time_point,nrow=1)+
+        ggtitle("Zebrafish Embryo")+
+        xlab("Time Points")+
+        ylab("Tail length") +
+        theme(axis.text=element_text(size=14),strip.text = element_text(size=13),
+                axis.title=element_text(size=17,face="bold"),
+                legend.title = element_text(size = 20),
+                legend.text = element_text(color = "black", size=15)))
+    dev.off()
+
+
+
+
+
+
+
+
+
+
+###### PAL_SEQ THREE GROUPS
+bartel_hpf2.data <- read.delim("GSE52809_Dre_mock_2hpf.txt")
+bartel_hpf4.data <- read.delim("GSE52809_Dre_mock_4hpf.txt")
+bartel_hpf6.data <- read.delim("GSE52809_Dre_mock_6hpf.txt")
+
+
+
+bartel_process <- function(data_bartel) {
+   id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
+   data_bartel2 <- data_bartel[,c("Transcript.ID", "Median.TL")] 
+   data_bartel3 <- merge(data_bartel2, id_convert, by.x="Transcript.ID", by.y="Transcript.stable.ID")
+   data_bartel3$Transcript.ID <- NULL
+   data_bartel4 <- subset(data_bartel3, Median.TL >= 0)
+   return(data_bartel4)
+ }
+
+ bartel_hpf2.processed <- bartel_process(bartel_hpf2.data)
+ bartel_hpf4.processed <- bartel_process(bartel_hpf4.data)
+ bartel_hpf6.processed <- bartel_process(bartel_hpf6.data)
+
+
+
+#Order the groups
+gr_groups <- read.delim("gr_list.txt")
+
+
+
+bartel_groups <- function(hpf2, hpf4, hpf6) {
+  #Merge the tables
+  hpf24 <- merge(hpf2, hpf4, all.x=TRUE,all.y=TRUE, by.x="Gene.stable.ID", by.y="Gene.stable.ID")
+  hpf246 <- merge(hpf24, hpf6,all.x=TRUE,all.y=TRUE, by.x="Gene.stable.ID", by.y="Gene.stable.ID")
+  #Column names
+  colnames(hpf246) <- c("Gene.stable.ID", "Median.TL.2hpf", "Median.TL.4hpf", "Median.TL.6hpf")
+  #Merge with Groups
+  hpf246_2 <- merge(hpf246, gr_groups,all.x=TRUE,  by.x="Gene.stable.ID", "Gene_ID")
+  hpf246_2$Group[is.na(hpf246_2$Group)] <- "Rest"
+  hpf246_final <- melt(hpf246_2)
+  hpf246_final <- hpf246_final[complete.cases(hpf246_final), ]
+}
+
+bartel_threegroups <- bartel_groups(bartel_hpf2.processed ,  bartel_hpf4.processed , bartel_hpf6.processed )
+
+
+bartel_boxplot <- function(data, label) {
+my_comparisons <- list( c("Median.TL.2hpf", "Median.TL.4hpf"), c("Median.TL.2hpf", "Median.TL.6hpf"), c("Median.TL.4hpf", "Median.TL.6hpf") )
+pdf(file=paste(label, "Zebrafish_Embryos_TailLength_Boxplot_Maternal_vs_Rest_3Groups_log.pdf",sep="_"),height=5,width=10,onefile=FALSE)
+    print(ggplot(data, aes(x = variable, y = log(value+1) )) + 
+      geom_boxplot(aes(fill = variable),position = position_dodge(0.9)) +
+      ylab("log2(MedianTail)")+
+      stat_compare_means(comparisons = my_comparisons, label.y = c(5, 5.5, 6))+
+       facet_wrap(~Group,nrow=1)+
+      stat_n_text() + 
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
+
+pdf(file=paste(label, "Zebrafish_Embryos_TailLength_Boxplot_Maternal_vs_Rest_3Groups.pdf",sep="_"),height=5,width=10,onefile=FALSE)
+    print(ggplot(data, aes(x = variable, y = value )) + 
+      geom_boxplot(aes(fill = variable),position = position_dodge(0.9)) +
+      ylab("MedianTail")+
+      stat_compare_means(comparisons = my_comparisons, label.y = c(280, 300, 320))+
+       facet_wrap(~Group,nrow=1)+
+      stat_n_text() + 
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
+}
+
+
+
+bartel_boxplot(bartel_threegroups, "PAL_Seq")
+
+
+
+
+
+### PAL-SEQ THREE GROUPS COUNTS
+
+
+bartel_hpf2.data <- read.delim("GSE52809_Dre_mock_2hpf.txt")
+bartel_hpf4.data <- read.delim("GSE52809_Dre_mock_4hpf.txt")
+bartel_hpf6.data <- read.delim("GSE52809_Dre_mock_6hpf.txt")
+
+
+
+bartel_process_rpkm <- function(data_bartel) {
+   id_convert <- read.delim("Transcript_ID_To_Gene_ID.txt")
+   data_bartel2 <- data_bartel[,c("Transcript.ID", "mRNA.RPKM")] 
+   data_bartel3 <- merge(data_bartel2, id_convert, by.x="Transcript.ID", by.y="Transcript.stable.ID")
+   data_bartel3$Transcript.ID <- NULL
+   data_bartel4 <- subset(data_bartel3, mRNA.RPKM >= 0)
+   return(data_bartel4)
+ }
+
+ bartel_hpf2.processed_rpkm<- bartel_process_rpkm(bartel_hpf2.data)
+ bartel_hpf4.processed_rpkm <- bartel_process_rpkm(bartel_hpf4.data)
+ bartel_hpf6.processed_rpkm <- bartel_process_rpkm(bartel_hpf6.data)
+
+
+
+
+
+bartel_groups_rpkm <- function(hpf2, hpf4, hpf6) {
+  #Merge the tables
+  hpf24 <- merge(hpf2, hpf4, all.x=TRUE,all.y=TRUE, by.x="Gene.stable.ID", by.y="Gene.stable.ID")
+  hpf246 <- merge(hpf24, hpf6,all.x=TRUE,all.y=TRUE, by.x="Gene.stable.ID", by.y="Gene.stable.ID")
+  #Column names
+  colnames(hpf246) <- c("Gene.stable.ID", "mRNA.RPKM.2hpf", "mRNA.RPKM.4hpf", "mRNA.RPKM.6hpf")
+  #Merge with Groups
+  hpf246_2 <- merge(hpf246, gr_groups,all.x=TRUE,  by.x="Gene.stable.ID", "Gene_ID")
+  hpf246_2$Group[is.na(hpf246_2$Group)] <- "Rest"
+  hpf246_final <- melt(hpf246_2)
+  hpf246_final <- hpf246_final[complete.cases(hpf246_final), ]
+}
+
+bartel_threegroups_rpkm <- bartel_groups_rpkm(bartel_hpf2.processed_rpkm ,  bartel_hpf4.processed_rpkm , bartel_hpf6.processed_rpkm )
+
+
+bartel_boxplot_rpkm <- function(data, label) {
+my_comparisons <- list( c("mRNA.RPKM.2hpf", "mRNA.RPKM.4hpf"), c("mRNA.RPKM.2hpf", "mRNA.RPKM.6hpf"), c("mRNA.RPKM.4hpf", "mRNA.RPKM.6hpf") )
+pdf(file=paste(label, "ThreeGroups_RPKM.pdf",sep="_"),height=5,width=10,onefile=FALSE)
+    print(ggplot(data, aes(x = variable, y = log(value+1) )) + 
+      geom_boxplot(aes(fill = variable),position = position_dodge(0.9)) +
+      ylab("log2(RPKM)")+
+      stat_compare_means(comparisons = my_comparisons, label.y = c(8, 8.5, 9))+
+       facet_wrap(~Group,nrow=1)+
+      stat_n_text() + 
+      #scale_fill_manual(values=colors)+
+      #coord_cartesian(ylim = c(0,175))+
+      theme_bw())
+  dev.off()
+}
+
+
+
+bartel_boxplot_rpkm(bartel_threegroups_rpkm, "PAL_Seq")
 
 
 

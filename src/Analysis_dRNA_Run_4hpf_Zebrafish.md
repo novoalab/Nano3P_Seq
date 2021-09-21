@@ -1,4 +1,4 @@
-# Analysis of the dRNA Run
+# Analysis of the dRNA 4hpf Run
 
 ####################################################
 ## PART 3 : MAPPING     ############################

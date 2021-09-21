@@ -19,8 +19,6 @@ qsub -cwd -q long-sl7 -l virtual_free=40G tail.sh
 
 
 
-
-
 sed '$d'  cDNA786327_6hpf_tailcontent.csv >  cDNA786327_6hpf_tailcontent2.csv
 sed '$d'  cDNA123791_6hpf_tailcontent.csv >  cDNA123791_6hpf_tailcontent2.csv
 
@@ -160,9 +158,12 @@ per_pos_15.4hpf <- rbind(per_pos_15.rep1.4hpf, per_pos_15.rep2.4hpf)
 per_pos_15.6hpf <- rbind(per_pos_15.rep1.6hpf, per_pos_15.rep2.6hpf)
 
 
+per_pos_15.2hpf$Timepoint <- "2HPF"
+per_pos_15.4hpf$Timepoint <- "4HPF"
+per_pos_15.6hpf$Timepoint <- "6HPF"
 
 
-
+per_pos_15.all <- rbind(per_pos_15.2hpf,per_pos_15.4hpf,per_pos_15.6hpf)
 
 
 

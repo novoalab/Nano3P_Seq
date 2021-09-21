@@ -107,7 +107,8 @@ polyA_hpf4.reshape <- reshape(polyA_hpf4.data,polyA.tails_processed,"PolyA_4hpf"
 
 
 
-
+ribodep_all_unique <-ribodep_all_merged[!duplicated(ribodep_all_merged[c("Gene_Name", "Sample")]),]
+write.table(ribodep_all.unique, file="Zebrafish_Ribodepletion_RepsMerged_Reshaped.tsv", sep="\t", quote=FALSE,row.names=FALSE)
 
 
 
@@ -210,6 +211,87 @@ ribodep_all_unique_246hpf_final3 <- merge(ribodep_all_unique_246hpf_final2, grou
 ribodep_all_unique_246hpf_final3$Group2[is.na(ribodep_all_unique_246hpf_final3$Group2)] <- "Rest"
 
 
+
+##### ANALYSE NONCODING RNA POPULATION
+
+ribodep_all_unique_246hpf_ncRNA <- subset(ribodep_all_unique_246hpf_final, Gene_Type=="lincRNA" |Gene_Type=="snoRNA" | Gene_Type=="snRNA"| Gene_Type=="scaRNA" )
+write.table(ribodep_all_unique_246hpf_ncRNA, file="Zebrafish_ncRNA_Expression_Tail.tsv", sep="\t", row.names=FALSE, quote=FALSE)
+
+
+ribodep_all_unique_246hpf_heatmap <- ribodep_all_unique_246hpf_ncRNA[,c("Gene_Type", "Gene_Name", "Gene_Count_Norm.2hpf", "Gene_Count_Norm.4hpf", "Gene_Count_Norm.6hpf")]
+
+
+
+library(ComplexHeatmap)
+library(circlize)
+
+
+data <- ribodep_all_unique_246hpf_heatmap
+
+rownames(data)<- data[,2] #assign gene names as rownames  
+data2<- data[,-c(1:2)] #remove the first three columns for the heatmap
+data3 <- t(scale(t(data2)))#Normalize by row (by gene)
+
+pdf("heatmap.ncRNA_genecounts.zscaled.pdf",height=12,width=8)
+Heatmap(data3, name = "z-scale Counts", 
+  #col = colorRamp2(c(-3,0,4), c("cadetblue3","floralwhite", "maroon4"),space = "RGB"), 
+    #cluster_rows = FALSE, 
+    col = colorRamp2(c(-3,-1.5,0,1.5,3), c("#2c7bb6","#abd9e9","floralwhite","#fdae61", "#d7191c"),space = "RGB"),
+    cluster_columns = FALSE,
+    column_title = "Time-point", 
+    column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+    column_names_gp = gpar(fontsize = 7, fontface = "bold"),
+    row_title = "ncRNAs", row_title_rot = 90,
+    row_title_gp = gpar(fontsize = 8, fontface = "bold"),
+    cluster_rows = TRUE,
+    show_row_names = FALSE,
+    row_names_gp = gpar(fontsize = 5), #row names size
+    column_order = 1:dim(data3)[2],#Keep the column order, make clustering FALSE for this
+    row_dend_side = "right", #Dendogram on the right side
+    #row_order = 1:dim(data4)[1], #Keep the row order, make clustering FALSE for this
+    #show_column_dend = TRUE, #
+    #column_dend_side = "top",
+    column_names_side = "bottom",
+    split = data$Gene_Type, #Splitting by Class
+    gap = unit(1, "mm"), #Gap
+    )
+dev.off()
+
+
+
+
+rownames(data)<- data[,2] #assign gene names as rownames  
+data2<- data[,-c(1:2)] #remove the first three columns for the heatmap
+
+
+data2_log <- log((data2*100)+1)
+
+
+
+pdf("heatmap.ncRNA_genecounts.logcounts.pdf",height=12,width=8)
+Heatmap(data2_log, name = "log(Counts)", 
+  #col = colorRamp2(c(-3,0,4), c("cadetblue3","floralwhite", "maroon4"),space = "RGB"), 
+    #cluster_rows = FALSE, 
+    col = colorRamp2(c(0,1,2), c("gray","pink","red"),space = "RGB"),
+    cluster_columns = FALSE,
+    column_title = "Time-point", 
+    column_title_gp = gpar(fontsize = 10, fontface = "bold"),
+    column_names_gp = gpar(fontsize = 7, fontface = "bold"),
+    #row_title = "ncRNAs", row_title_rot = 90,
+    row_title_gp = gpar(fontsize = 8, fontface = "bold"),
+    cluster_rows = TRUE,
+    show_row_names = FALSE,
+    row_names_gp = gpar(fontsize = 5), #row names size
+    column_order = 1:dim(data3)[2],#Keep the column order, make clustering FALSE for this
+    row_dend_side = "right", #Dendogram on the right side
+    #row_order = 1:dim(data4)[1], #Keep the row order, make clustering FALSE for this
+    #show_column_dend = TRUE, #
+    #column_dend_side = "top",
+    column_names_side = "bottom",
+    row_split = data$Gene_Type, #Splitting by Class
+    gap = unit(1, "mm"), #Gap
+    )
+dev.off()
 
 
 

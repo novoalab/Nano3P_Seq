@@ -148,6 +148,7 @@ tail_comparison_overall <- function(data, label) {
   pdf(file=paste(label, "Overall_Tail_Comparison_Single_Transcript.pdf",sep="_"),height=3,width=6,onefile=FALSE)
   print(ggplot(data2, aes(x=tail_length, color=Sample)) +
     geom_density()+
+     stat_compare_means(method = "wilcox")+
     theme_bw()+
     #xlim(-10, 350)+
     facet_wrap(~Gene_Type, scales="free"))
@@ -156,6 +157,28 @@ tail_comparison_overall <- function(data, label) {
 
 
 tail_comparison_overall(polyA_vs_ribodep_4hpf, "PolyA_vs_Ribodep_4HPF")
+
+
+
+
+
+
+
+
+
+  ribodep_uniq <-  ribodep_hpf4_merged.reshape[!duplicated(ribodep_hpf4_merged.reshape[c("Gene_Name")]),]
+   polya_uniq <-  polyA_hpf4.reshape[!duplicated(polyA_hpf4.reshape[c("Gene_Name")]),]
+
+
+wilcox_test_data <- merge(ribodep_uniq,polya_uniq, by.x="Gene_Name", by.y="Gene_Name")
+wilcox_test_data_mrna <- subset(wilcox_test_data, Gene_Type.x=="protein_coding")
+wilcox_test_data_mrna2 <-  wilcox_test_data_mrna[,c("Gene_Name","Median_Length.x","Median_Length.y")]
+
+
+res <- wilcox.test(wilcox_test_data_mrna2$Median_Length.x, wilcox_test_data_mrna2$Median_Length.y)
+
+
+
 
 
 

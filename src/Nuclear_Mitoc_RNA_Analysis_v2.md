@@ -75,6 +75,9 @@ mouse.reshape <- reshape(mouse.data,mouse.tails_processed,"mouse")
 mouse_rep1.reshape <- reshape(mouse_rep1.data,mouse.tails_processed,"mouse")
 mouse_rep2.reshape <- reshape(mouse_rep2.data,mouse.tails_processed,"mouse")
 
+
+mouse.unique <-  mouse.reshape[!duplicated(mouse.reshape[c("Gene_Name", "Sample")]),]
+write.table(mouse.unique, file="Mouse_RepsMerged_Reshaped.tsv", sep="\t", quote=FALSE,row.names=FALSE)
 ####################################################################
 
 
@@ -154,21 +157,6 @@ plot_denscols_with_corr_pearson("Mouse_Rep1_Rep2_Gene_Count_Sequins", mouse_rep1
 
 
 plot_denscols_with_corr_pearson("Mouse_Rep1_Rep2_logGene_Count_Sequins", log(mouse_rep1_vs_rep2_sequin2$Gene_Count.x+1), log(mouse_rep1_vs_rep2_sequin2$Gene_Count.y+1), "Rep1_log(Count)", "Rep2_log(Count)" )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -427,11 +415,60 @@ export_reads <- function(data,label) {
 
 export_reads(mouse_per_gene_tails,"Mouse")
 
-§
+
+
+
+
+
+
+
+#### Sequin Expected vs Observed
+
+sequins <- subset(mouse.unique, Gene_Type=="synthetic")
+sequins_obs <- sequins[,c("Gene_Name", "Gene_Count", "Gene_Count_Norm")]
+
+sequins_exp <- read.delim("rnasequin_genes_2.4.tsv")
+sequins_exp2 <- sequin_exp[,c("NAME", "LENGTH", "MIX_A" )]
+
+
+sequins_exp_obs <- merge(sequins_obs,sequins_exp2, by.x="Gene_Name", by.y="NAME" )
+
+sequins_exp_obs$Log_Observed_Counts <- log(sequins_exp_obs$Gene_Count+1)
+sequins_exp_obs$Log_Expected_Counts <- log(sequins_exp_obs$MIX_A+1)
+
+sequins_exp_obs$Observed_Counts_Scaled <- rescale(sequins_exp_obs$Log_Observed_Counts)
+sequins_exp_obs$Expected_Counts_Scaled <- rescale(sequins_exp_obs$Log_Expected_Counts)
+
+
+
+
+plot_denscols_with_corr_pearson<-function(pdfname,my_x,my_y,xlab,ylab) {
+  pdf(file=paste(pdfname, "_pearson.pdf",sep=""), height=6, width=6)
+  dcols<-densCols(my_x,my_y, colramp=colorRampPalette(blues9[-(1:3)]))
+  plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab)
+  title(main=pdfname, col.main="black", font.main=4)
+  #abline(0,1,lwd=3)
+  # Correlation
+  test<-cor.test(my_x,my_y, method="pearson")
+  print(test)
+  cor222<-paste("Pearson's r =",round(as.numeric(test$estimate),3))
+  #pval<-paste("Pval =",test$p.value)
+  mtext(paste(cor222))
+  #mtext(paste(cor222,pval,sep=" ; ")) #Print the subtitle with the dataset correlation
+  dev.off()
+}
+
+plot_denscols_with_corr_pearson("Sequins_Exp_vs_Obs_LogCounts", sequins_exp_obs$Log_Expected_Counts, sequins_exp_obs$Log_Observed_Counts, "log(Expected Counts)", "log(Observed Counts)" )
+
+plot_denscols_with_corr_pearson("Sequins_Exp_vs_Obs_ScaledLogCounts", sequins_exp_obs$Expected_Counts_Scaled, sequins_exp_obs$Observed_Counts_Scaled, "scaled_log(Expected Counts)", "scaled_log(Observed Counts)" )
+
+
 
 
 
 ```
+
+
 
 
 ```bash

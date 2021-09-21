@@ -47,7 +47,7 @@ polyA.tails_processed <- manipulate_tail_(polyA.tails)
 
 # Import the data
 #RIBODEPLETED DATA
-ribodep_hpf2_rep1.data <- read.delim("cDNA964321_all.genome38_sequin_rRNA_ALLRNAs_Merged.bed", header=FALSE)
+ribodep_hpf2_rep1.data <- read.delim("2hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
 ribodep_hpf4_rep1.data <- read.delim("4hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
 ribodep_hpf6_rep1.data <- read.delim("6hpf.genome11_sequin_ALLRNAs_Merged_Rep1.bed", header=FALSE)
 
@@ -360,13 +360,32 @@ plot_denscols_with_corr_pearson("Rep1_Rep2_6hpf_genecount", log(data_merged_mRNA
 
 
 
-plot_denscols_with_corr_pearson("Rep1_Rep2_2hpf_tail", data_merged_mRNA_min30_2hpf$Median_Length.x , data_merged_mRNA_min30_2hpf$Median_Length.y, "2HPF_Rep1_Median_Length", "2HPF_Rep2_Median_Length" )
+plot_denscols_with_corr_pearson_tail<-function(pdfname,my_x,my_y,xlab,ylab) {
+	pdf(file=paste(pdfname, "_pearson.pdf",sep=""), height=6, width=6)
+	dcols<-densCols(my_x,my_y, colramp=colorRampPalette(blues9[-(1:3)]))
+	plot(my_x,my_y,col=dcols,cex=1, cex.lab=1,cex.main=3,lwd=5,pch=20,xlab=xlab,ylab=ylab,xlim = c(0,160),ylim = c(0,160) )
+	title(main=pdfname, col.main="black", font.main=4)
+	#abline(v=0, lty=2)
+	# Correlation
+	test<-cor.test(my_x,my_y, method="pearson")
+	print(test)
+	cor222<-paste("Pearson's rho =",round(as.numeric(test$estimate),3))
+	#pval<-paste("Pval =",test$p.value)
+	mtext(paste(cor222))
+	#mtext(paste(cor222,pval,sep=" ; ")) #Print the subtitle with the dataset correlation
+	dev.off()
+}
 
 
-plot_denscols_with_corr_pearson("Rep1_Rep2_4hpf_tail", data_merged_mRNA_min30_4hpf$Median_Length.x , data_merged_mRNA_min30_4hpf$Median_Length.y, "4HPF_Rep1_Median_Length", "4HPF_Rep2_Median_Length" )
 
 
-plot_denscols_with_corr_pearson("Rep1_Rep2_6hpf_tail", data_merged_mRNA_min30_6hpf$Median_Length.x , data_merged_mRNA_min30_6hpf$Median_Length.y, "6HPF_Rep1_Median_Length", "6HPF_Rep2_Median_Length" )
+plot_denscols_with_corr_pearson_tail("Rep1_Rep2_2hpf_tail", data_merged_mRNA_min30_2hpf$Median_Length.x , data_merged_mRNA_min30_2hpf$Median_Length.y, "2HPF_Rep1_Median_Length", "2HPF_Rep2_Median_Length" )
+
+
+plot_denscols_with_corr_pearson_tail("Rep1_Rep2_4hpf_tail", data_merged_mRNA_min30_4hpf$Median_Length.x , data_merged_mRNA_min30_4hpf$Median_Length.y, "4HPF_Rep1_Median_Length", "4HPF_Rep2_Median_Length" )
+
+
+plot_denscols_with_corr_pearson_tail("Rep1_Rep2_6hpf_tail", data_merged_mRNA_min30_6hpf$Median_Length.x , data_merged_mRNA_min30_6hpf$Median_Length.y, "6HPF_Rep1_Median_Length", "6HPF_Rep2_Median_Length" )
 
 
 
