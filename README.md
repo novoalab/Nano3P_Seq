@@ -249,7 +249,3 @@ python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_typ
 If you find this work useful, please cite: 
 
 Begik O, Liu H, Delgado-Tejedor A, Kontur C, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore sequencing. bioRxiv 2021. doi: XXX. 
-
-
-
->>>>>>> 6a36f7669be491a93cc5802bf97616426f3e69e8
