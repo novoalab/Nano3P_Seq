@@ -243,7 +243,15 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.
 ```
 ### 7. Getting your poly(A) tail ends to be visible in IGV
 
+```bash
+#Porechop tool to remove the adapter sequences
+porechop -i input.fastq> trimmed.fastq
 
+# Remap the reads to the same reference
+# Load the BAM file into IGV
+# Go to View>Preferences>Alignments>Click on "Show soft-clipped bases"
+# Zoom into the 3'end of the gene
+```
 
 ## Software versions used
 
@@ -251,10 +259,11 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.
 * minimap2 version 2.17
 * samtools version 0.1.19
 * R version 3.6.0
-* TailfindR v1
-* picard.jar
-* bedtools 2.29.1
-* Isoquant
+* TailfindR v1.2
+* picard.jar v2.25.0
+* bedtools v2.29.1
+* Isoquant v1.3
+* porechop v0.2.4
 
 ## Citation
 If you find this work useful, please cite: 
