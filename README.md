@@ -241,10 +241,7 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.
 ```
 
 ```
-
 ### 7. Getting your poly(A) tail ends to be visible in IGV
-=======
-### 9. Getting your poly(A) tail ends to be visible in IGV
 
 
 
