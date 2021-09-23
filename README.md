@@ -39,7 +39,6 @@ bedtools bamtobed -i data.bam > data.bed
 ```bash
 # File needed : 
 ## BED converted from BAM mapped to genome and rRNAs and sorted
-
 Rscript --vanilla executable_R_scripts/extract_readstarts.R data.bed <outputFile.readstarts.bed>
 ```
 
@@ -214,9 +213,7 @@ num_cores = 10)
 ```
 ### 5. Post-processing of polyA tail length estimations 
 ```bash
-<<<<<<< HEAD
 Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv <outputFile.tails.processed.tsv>
-
 ```
 
 ### 6. Visualizing the results
@@ -228,7 +225,6 @@ Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep
 #### b) Dotplots of poly(A) tail length estimations across time points 
 ```bash
 Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.bed 6hpf.bed <output_plot_label>
-
 ```
 
 ### 7. Visualizing the results
@@ -245,11 +241,10 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.
 ```
 
 ```
-<<<<<<< HEAD
+
 ### 7. Getting your poly(A) tail ends to be visible in IGV
 =======
 ### 9. Getting your poly(A) tail ends to be visible in IGV
->>>>>>> 5225218bf99c0d0ee3b79f8bc31786ee673fa8d3
 
 
 
@@ -267,8 +262,5 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.
 ## Citation
 If you find this work useful, please cite: 
 
-<<<<<<< HEAD
+
 Begik O, Liu H, Delgado-Tejedor A, Kontur C, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore sequencing. bioRxiv 2021. doi: https://doi.org/10.1101/2021.09.22.461331. 
-=======
-Begik O, Liu H, Delgado-Tejedor A, Kontur C, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore sequencing. bioRxiv 2021. doi: XXX. 
->>>>>>> 5225218bf99c0d0ee3b79f8bc31786ee673fa8d3
