@@ -235,12 +235,13 @@ Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep
 ```
 #### b) Dotplots of poly(A) tail length estimations across time points 
 ```bash
-Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.bed 6hpf.bed
+Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.bed 6hpf.bed
 ```
 #### c) Line plots of transcript abundances across time points
 ```
-
+Rscript --vanilla executable_R_scripts/line_plot.R Tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
 ```
+
 ### 7. Getting your poly(A) tail ends to be visible in IGV
 
 ```bash
