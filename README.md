@@ -242,7 +242,7 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.
 Rscript --vanilla executable_R_scripts/line_plot.R Tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
 ```
 
-### 7. Getting your poly(A) tail ends to be visible in IGV
+### 8. Getting your poly(A) tail ends to be visible in IGV
 
 ```bash
 #Porechop tool to remove the adapter sequences
