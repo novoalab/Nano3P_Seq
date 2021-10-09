@@ -4,7 +4,7 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 
 ## General command line steps used to analyze Nano3P-seq datasets
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-- [1. Base-calling, demultiplexing and mapping](#1.-Base-calling,-demultiplexing-and-mapping)
+- [1. Base-calling, demultiplexing and mapping](#1-Base-calling-demultiplexing-and-mapping)
 - [2. Filtering mapped reads based on annotations and assigning reads to gene biotype](#2.-Filtering-mapped-reads-based-on-annotations-and-assigning-reads-to-gene-biotype)
 - [3. Assigning reads to transcripts/isoforms](#3.-Assigning-reads-to-transcripts/isoforms)
 - [4. Per-read poly(A) tail length estimations](#4.-Per-read-poly(A)-tail-length-estimations)
