@@ -2,7 +2,7 @@
 # Nano3P-seq
 Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
-## General command line steps used to analyze Nano3P-seq datasets
+## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
 - [1. Base-calling, demultiplexing and mapping](#1-Base-calling-demultiplexing-and-mapping)
  - [2. Filtering mapped reads based on annotations and assigning reads to gene biotype](#2-Filtering-mapped-reads-based-on-annotations-and-assigning-reads-to-gene-biotype)
@@ -12,7 +12,8 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
  - [6. Visualizing the results](#6-Visualizing-the-results)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
- 
+
+## General command line steps used to analyze Nano3P-seq datasets
 
 ### 1. Base-calling, demultiplexing and mapping
 Base-calling and demultiplexing with Guppy:
