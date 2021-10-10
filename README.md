@@ -5,11 +5,11 @@ Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing w
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
 - [1. Base-calling, demultiplexing and mapping](#1-Base-calling-demultiplexing-and-mapping)
- - [2. Filtering mapped reads based on annotations and assigning reads to gene biotype](#2-Filtering-mapped-reads-based-on-annotations-and-assigning-reads-to-gene-biotype)
- - [3. Assigning reads to transcripts/isoforms](#3-Assigning-reads-to-transcripts/isoforms)
- - [4. Per-read poly(A) tail length estimations](#4-Per-read-polyA-tail-length-estimations)
- - [5. Post-processing of polyA tail length estimations](#5-Post-processing-of-polyA-tail-length-estimations)
- - [6. Visualizing the results](#6-Visualizing-the-results)
+ * [2. Filtering mapped reads based on annotations and assigning reads to gene biotype](#2-Filtering-mapped-reads-based-on-annotations-and-assigning-reads-to-gene-biotype)
+ * [3. Assigning reads to transcripts/isoforms](#3-Assigning-reads-to-transcripts/isoforms)
+ * [4. Per-read poly(A) tail length estimations](#4-Per-read-polyA-tail-length-estimations)
+ * [5. Post-processing of polyA tail length estimations](#5-Post-processing-of-polyA-tail-length-estimations)
+ * [6. Visualizing the results](#6-Visualizing-the-results)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
