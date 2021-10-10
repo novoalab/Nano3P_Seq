@@ -1,6 +1,6 @@
 
-# Nano3P-seq
-Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
+# Nano3P-seq: *Nano*pore *3* *P*rime end-capture *seq*uencing
+Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
