@@ -236,7 +236,7 @@ Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep
 Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.bed 6hpf.bed
 ```
 #### c) Line plots of transcript abundances across time points
-```
+```bash
 Rscript --vanilla executable_R_scripts/line_plot.R Tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
 ```
 
@@ -252,6 +252,22 @@ porechop -i input.fastq> trimmed.fastq
 # Zoom into the 3'end of the gene
 ```
 
+### 7. Analysing the tail-composition
+
+#### a) Extract the soft clipped part of the reads
+```bash
+python soft_clipped_content.py trimmed.bam > tail_content.tsv
+```
+
+#### b) Post-processing the tail content 
+```bash
+
+```
+
+
+
+
+
 ## Software versions used
 
 * Guppy version 3.6.1
@@ -263,6 +279,7 @@ porechop -i input.fastq> trimmed.fastq
 * bedtools v2.29.1
 * Isoquant v1.3
 * porechop v0.2.4
+* Python version 3
 
 ## Citation
 If you find this work useful, please cite: 
