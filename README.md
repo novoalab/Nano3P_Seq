@@ -1,10 +1,21 @@
 
-# Nano3P-seq
-Analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
+# Nano3P-seq: *Nano*pore *3* *P*rime end-capture *seq*uencing
+Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first strand sequencing with template switching)
 
-## General command line steps used to analyze Nano3P-seq
+## Table of Contents
+- [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
+    - [1. Base-calling, demultiplexing and mapping](#1-Base-calling-demultiplexing-and-mapping)
+    - [2. Filtering mapped reads based on annotations and assigning reads to gene biotype](#2-Filtering-mapped-reads-based-on-annotations-and-assigning-reads-to-gene-biotype)
+    - [3. Assigning reads to transcripts/isoforms](#3-Assigning-reads-to-transcripts/isoforms)
+    - [4. Per-read poly(A) tail length estimations](#4-Per-read-polyA-tail-length-estimations)
+    - [5. Post-processing of polyA tail length estimations](#5-Post-processing-of-polyA-tail-length-estimations)
+    - [6. Visualizing the results](#6-Visualizing-the-results)
+- [Software versions used](#Software-versions-used) 
+- [Citation](#Citation) 
 
-### 1. Base-calling, demultiplexing, mapping
+## General command line steps used to analyze Nano3P-seq datasets
+
+### 1. Base-calling, demultiplexing and mapping
 Base-calling and demultiplexing with Guppy:
 ```bash
 guppy_3_6_1 --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg  --fast5_out -ri input_fast5 -s output_fastq
@@ -22,8 +33,6 @@ samtools sort output.sam output.sorted && rm output.sam && samtools index output
 ```
 
 ### 2. Filtering mapped reads based on annotations and assigning reads to gene biotype
-
-
 
 #### 2.1. Convert the BAM into BED
 ```bash
@@ -220,17 +229,6 @@ Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv <outputFile.tail
 
 #### a) Scatterplots of poly(A) tail length estimations across biological replicates
 ```bash
-Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep2.tails Rep1.bed Rep2.bed <output_plot_label>
-```
-#### b) Dotplots of poly(A) tail length estimations across time points 
-```bash
-Rscript --vanilla executable_R_scripts/dotplot_timepoints.R Tails 2hpf.bed 4hpf.bed 6hpf.bed <output_plot_label>
-```
-
-### 7. Visualizing the results
-
-#### a) Scatterplots of poly(A) tail length estimations across biological replicates
-```bash
 Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep2.tails Rep1.bed Rep2.bed label
 ```
 #### b) Dotplots of poly(A) tail length estimations across time points 
@@ -242,7 +240,7 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.
 Rscript --vanilla executable_R_scripts/line_plot.R Tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
 ```
 
-### 7. Getting your poly(A) tail ends to be visible in IGV
+#### d) Getting your poly(A) tail ends to be visible in IGV
 
 ```bash
 #Porechop tool to remove the adapter sequences
