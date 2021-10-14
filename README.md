@@ -237,7 +237,7 @@ Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.
 ```
 #### c) Line plots of transcript abundances across time points
 ```bash
-Rscript --vanilla executable_R_scripts/line_plot.R Tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
+Rscript --vanilla executable_R_scripts/line_plot.R tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
 ```
 
 #### d) Getting your poly(A) tail ends to be visible in IGV
@@ -261,7 +261,7 @@ python soft_clipped_content.py trimmed.bam > tail_content.tsv
 
 #### b) Post-processing the tail content 
 ```bash
-
+Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file content_file label
 ```
 
 
