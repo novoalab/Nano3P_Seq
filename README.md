@@ -16,10 +16,26 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 ## General command line steps used to analyze Nano3P-seq datasets
 
 ### 1. Base-calling, demultiplexing and mapping
-Base-calling and demultiplexing with Guppy:
+
+Base-calling with Guppy v6 without trimming the adapter :
 ```bash
-guppy_3_6_1 --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg  --fast5_out -ri input_fast5 -s output_fastq
+guppy_basecalling --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg --barcode_kits EXP-NBD104 --fast5_out --trim_strategy none -ri fast5_files -s output_folder
 ```
+
+Base-calling and demultiplexing with Guppy v6 without trimming the adapter :
+```bash
+guppy_basecalling --device cuda:0 -c dna_r9.4.1_450bps_hac.cfg --fast5_out --trim_strategy none -ri fast5_files -s output_folder
+```
+
+Demultiplexing the unclassified.fastq file using porechop (Python 3 is required)
+
+```bash
+porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --untrimmed 
+```
+
+
+
+
 Mapping with minimap2:
 ```bash
 # Mapping to transcriptome
