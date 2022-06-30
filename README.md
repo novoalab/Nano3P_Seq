@@ -7,19 +7,20 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 
 ## Table of Contents
-- [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-    - [1. Base-calling and demultiplexing](#1-Base-calling-and-demultiplexing)
-    - [2. Tail length estimations using tailfindR nano3p-seq version](#2-Tail-length-estimations-using-tailfindR-nano3p-seq-version)
-    - [3. Trimming the adapter sequence](#3-Trimming-the-adapter-sequence)
-    - [4. Mapping](#4-Mapping)
-    - [5. Extracting soft-clipped region of reads](#5-Extracting-soft-clipped-region-of-reads)
-    - [6. Visualizing the results](#6-Visualizing-the-results)
+- [1.General command line steps used to analyze Nano3P-seq datasets](#1-General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
+    - [1.1. Base-calling and demultiplexing](#1.1-Base-calling-and-demultiplexing)
+    - [1.2. Tail length estimations using tailfindR nano3p-seq version](#1.2-Tail-length-estimations-using-tailfindR-nano3p-seq-version)
+    - [1.3. Trimming the adapter sequence](#1.3-Trimming-the-adapter-sequence)
+    - [1.4. Mapping](#1.4-Mapping)
+    - [1.5. Extracting soft-clipped region of reads](#1.5-Extracting-soft-clipped-region-of-reads)
+-[Optional filtering steps](#Optional-filtering-steps)
+-[Detailed analyses](#Detailed-analyses)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
-## General steps used to analyze Nano3P-seq datasets
+## 1. General steps used to analyze Nano3P-seq datasets
 
-### 1. Base-calling and demultiplexing
+### 1.1. Base-calling and demultiplexing
 
 Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
 
@@ -41,7 +42,7 @@ porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --u
 ```
 
 
-### 2. Tail length estimations using tailfindR nano3p-seq version
+### 1.2. Tail length estimations using tailfindR nano3p-seq version
 You can download nano3p-seq version of tailfindr here : https://github.com/adnaniazi/tailfindr/tree/nano3p-seq
 ```R
 #Prerequisite : tailfindR tool nano3p-seq version
@@ -52,7 +53,7 @@ num_cores = 10)
 ```
 
 
-### 3. Trimming the adapter sequence
+### 1.3. Trimming the adapter sequence
 We need to trim the adapter sequence before analysing the tail content
 In order to do so, we need to create an alternative adapters.py file that ONLY contains Nano3p-seq adapter. 
 This way we can make the search with less stringency and get a cleaner trimming
@@ -63,7 +64,7 @@ porechop --extra_end_trim 0 --end_threshold 40 --adapter_threshold 40 -i input.f
 ```
 
 
-### 4. Mapping
+### 1.4. Mapping
 ```bash
 # Mapping to transcriptome
 minimap2 -ax map-ont --MD reference.fasta input.fastq | samtools view -hSb -F 3844 - > output.sam
@@ -74,7 +75,7 @@ minimap2 -ax splice -k14 --MD $ref input.fastq | samtools view -hSb -F 3844 - > 
 samtools sort output.sam output.sorted && rm output.sam && samtools index output.sorted.bam
 ```
 
-### 5. Extracting soft-clipped region of reads
+### 1.5. Extracting soft-clipped region of reads
 We extract this information for the tail content analysis. It should contain the unmapped tail region of the reads
 ```bash
 python soft_clipped_content.py trimmed.bam > tail_content.tsv
@@ -87,20 +88,16 @@ python soft_clipped_content.py trimmed.bam > tail_content.tsv
 
 
 
-
-
-
-
-
-
-
-
-
-
-### 2. Filtering mapped reads based on annotations and assigning reads to gene biotype
+## 2.Optional filtering steps 
+Filtering mapped reads based on annotations and assigning reads to gene biotype 
 At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
 
-#### 2.1. Convert the BAM into BED
+
+
+
+
+
+### 2.1. Convert the BAM into BED
 ```bash
 # File needed:
 ## BAM mapped to genome and rRNAs and sorted
@@ -109,7 +106,7 @@ At this step, using the annotation, we aim to remove the reads coming from degra
 bedtools bamtobed -i data.bam > data.bed
 ```
 
-#### 2.2. Extract Reads starts 
+### 2.2. Extract Reads starts 
 
 ```bash
 # File needed : 
@@ -119,7 +116,7 @@ Rscript --vanilla executable_R_scripts/extract_readstarts.R data.bed <outputFile
 
 
 
-#### 2.3. Intersect the read starts with Small RNAs transcript ends
+### 2.3. Intersect the read starts with Small RNAs transcript ends
 
 ```bash
 # File needed :
@@ -163,13 +160,13 @@ samtools index data.restRNAs.sorted.bam
 ```
 
 
-#### 2.4. Convert the BAM into BED 
+### 2.4. Convert the BAM into BED 
 
 ```bash
 bedtools bamtobed -i data.restRNAs.sorted.bam > data.restRNAs.sorted.bed
 ```
 
-#### 2.5. Extract Reads starts of the Rest Reads (non-smallRNA reads)
+### 2.5. Extract Reads starts of the Rest Reads (non-smallRNA reads)
 
 ```bash
 # File needed : 
@@ -181,7 +178,7 @@ Rscript --vanilla executable_R_scripts/extract_readstarts.R data.restRNAs.sorted
 
 
 
-#### 2.6. Intersect Read Starts with Transcript Ends for the Rest RNAs (non-smallRNA reads)
+### 2.6. Intersect Read Starts with Transcript Ends for the Rest RNAs (non-smallRNA reads)
 ```bash
 # File needed :
 ## Reads Starts file of the BAM mapped to Genome and rRNAs and sorted (Rest RNAs)
@@ -218,7 +215,7 @@ awk '!seen[$4]++' data.restRNAs.complete.sorted.bed | cut -f4 > data.restRNAs.co
 ```
 
 
-#### 2.7. Create the BAM file for the miRNAs
+### 2.7. Create the BAM file for the miRNAs
 ```bash
 #Files needed
 ## miRNA Gene BED file extracted from annotation file
@@ -253,7 +250,7 @@ samtools sort data.miRNAs.bam data.miRNAs.sorted
 samtools index data.miRNAs.sorted.bam
 ```
 
-#### 2.8. Merge all the BED files with their annotations
+### 2.8. Merge all the BED files with their annotations
 
 ```bash
 
@@ -351,4 +348,4 @@ Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file 
 If you find this work useful, please cite: 
 
 
-Begik O, Diensthuber G, Liu H, Delgado-Tejedor A, Kontur C, Niazi AM, Valen E, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore cDNA sequencing. bioRxiv 2022. doi: https://www.biorxiv.org/content/10.1101/2021.09.22.461331v3. 
+Begik O, Diensthuber G, Liu H, Delgado-Tejedor A, Kontur C, Niazi AM, Valen E, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore cDNA sequencing. bioRxiv 2022. doi:https://www.biorxiv.org/content/10.1101/2021.09.22.461331v3. 
