@@ -107,7 +107,7 @@ We will use a mouse sample run as an example
 
 ### Create new annotation files
 
-
+Refer to this [link](https://github.com/novoalab/Nano3P_Seq/tree/master/executable_R_scripts/annotation_building) for creating bed files from gtf file
 
 
 
