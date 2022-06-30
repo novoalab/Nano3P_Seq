@@ -13,9 +13,10 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
-## General command line steps used to analyze Nano3P-seq datasets
+## General steps used to analyze Nano3P-seq datasets
 
-### 1. Base-calling, demultiplexing and mapping
+### 1. Base-calling and demultiplexing
+
 Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
 
 
@@ -35,7 +36,30 @@ Demultiplexing the unclassified.fastq file using porechop (Python 3 is required)
 porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --untrimmed 
 ```
 
-Mapping with minimap2:
+
+### 2. Tail length estimations using tailfindR nano3p-seq version
+You can download nano3p-seq version of tailfindr here : https://github.com/adnaniazi/tailfindr/tree/nano3p-seq
+```R
+#Prerequisite : tailfindR tool nano3p-seq version
+tails <- find_tails(fast5_dir ='fast5_location',
+save_dir = './',
+csv_filename = 'Tails.csv' ,
+num_cores = 10)
+```
+
+
+### 3. Trimming the adapter sequence
+We need to trim the adapter sequence before analysing the tail content
+In order to do so, we need to create an alternative adapters.py file that ONLY contains Nano3p-seq adapter. 
+This way we can make the search with less stringency and get a cleaner trimming
+You can find the adapters.py file in the porechop_libraries folder
+
+```bash
+porechop --extra_end_trim 0 --end_threshold 40 --adapter_threshold 40 -i input.fastq  -t 10 > output.fastq
+```
+
+
+### 4. Mapping
 ```bash
 # Mapping to transcriptome
 minimap2 -ax map-ont --MD reference.fasta input.fastq | samtools view -hSb -F 3844 - > output.sam
@@ -44,8 +68,27 @@ samtools view  -f 0x10 -bq 59 output.sam | samtools sort - output.sorted && samt
 # Mapping to genome
 minimap2 -ax splice -k14 --MD $ref input.fastq | samtools view -hSb -F 3844 - >  output.sam
 samtools sort output.sam output.sorted && rm output.sam && samtools index output.sorted.bam
-
 ```
+
+### 5. Extracting soft-clipped region of reads
+We extract this information for the tail content analysis. It should contain the unmapped tail region of the reads
+```bash
+python soft_clipped_content.py trimmed.bam > tail_content.tsv
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
