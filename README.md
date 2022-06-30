@@ -8,11 +8,11 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-    - [1. Base-calling and demultiplexing](#1-Base-calling-and-demultiplexing)
-    - [2. Tail length estimations using tailfindR nano3p-seq version](#2-Tail-length-estimations-using-tailfindR-nano3p-seq-version)
-    - [3. Trimming the adapter sequence](#3-Trimming-the-adapter-sequence)
-    - [4. Mapping](#4-Mapping)
-    - [5. Extracting soft-clipped region of reads](#5-Extracting-soft-clipped-region-of-reads)
+    - [Base-calling and demultiplexing](#Base-calling-and-demultiplexing)
+    - [Tail length estimations using tailfindR nano3p-seq version](#Tail-length-estimations-using-tailfindR-nano3p-seq-version)
+    - [Trimming the adapter sequence](#Trimming-the-adapter-sequence)
+    - [Mapping](#Mapping)
+    - [Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
 -[Optional filtering steps](#Optional-filtering-steps)
 -[Detailed analyses](#Detailed-analyses)
 - [Software versions used](#Software-versions-used) 
@@ -20,7 +20,7 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## General steps used to analyze Nano3P-seq datasets
 
-### 1. Base-calling and demultiplexing
+### Base-calling and demultiplexing
 
 Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
 
@@ -42,8 +42,8 @@ porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --u
 ```
 
 
-### 2. Tail length estimations using tailfindR nano3p-seq version
-You can download nano3p-seq version of tailfindr here : https://github.com/adnaniazi/tailfindr/tree/nano3p-seq
+### Tail length estimations using tailfindR nano3p-seq version
+You can download nano3p-seq version of tailfindr [here](https://github.com/adnaniazi/tailfindr/tree/nano3p-seq)
 ```R
 #Prerequisite : tailfindR tool nano3p-seq version
 tails <- find_tails(fast5_dir ='fast5_location',
@@ -53,7 +53,7 @@ num_cores = 10)
 ```
 
 
-### 3. Trimming the adapter sequence
+### Trimming the adapter sequence
 We need to trim the adapter sequence before analysing the tail content
 In order to do so, we need to create an alternative adapters.py file that ONLY contains Nano3p-seq adapter. 
 This way we can make the search with less stringency and get a cleaner trimming
@@ -64,7 +64,9 @@ porechop --extra_end_trim 0 --end_threshold 40 --adapter_threshold 40 -i input.f
 ```
 
 
-### 4. Mapping
+### Mapping
+General mapping options used in our pipeline
+
 ```bash
 # Mapping to transcriptome
 minimap2 -ax map-ont --MD reference.fasta input.fastq | samtools view -hSb -F 3844 - > output.sam
@@ -75,7 +77,17 @@ minimap2 -ax splice -k14 --MD $ref input.fastq | samtools view -hSb -F 3844 - > 
 samtools sort output.sam output.sorted && rm output.sam && samtools index output.sorted.bam
 ```
 
-### 5. Extracting soft-clipped region of reads
+Furthermore, we followed a pipelime comprised of customised scripts in order to extract the following information: 
+
+  -  Filter out the reads that might belong to degraded RNAs
+  -  Correctly assign the reads to distinct biotypes 
+
+
+You can check out [this](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets) section for the detailed pipeline
+
+
+
+### Extracting soft-clipped region of reads
 We extract this information for the tail content analysis. It should contain the unmapped tail region of the reads
 ```bash
 python soft_clipped_content.py trimmed.bam > tail_content.tsv
@@ -88,15 +100,19 @@ python soft_clipped_content.py trimmed.bam > tail_content.tsv
 
 
 
-## 2.Optional filtering steps 
+## Optional filtering steps 
 Filtering mapped reads based on annotations and assigning reads to gene biotype 
 At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
+We will use a mouse sample run as an example
+
+### Create new annotation files
 
 
 
 
 
-### 2.1. Convert the BAM into BED
+
+### Convert the BAM into BED
 ```bash
 # File needed:
 ## BAM mapped to genome and rRNAs and sorted
