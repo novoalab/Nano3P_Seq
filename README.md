@@ -8,11 +8,11 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## Table of Contents
 - [1.General command line steps used to analyze Nano3P-seq datasets](#1-General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-    - [1.1. Base-calling and demultiplexing](#1.1-Base-calling-and-demultiplexing)
-    - [1.2. Tail length estimations using tailfindR nano3p-seq version](#1.2-Tail-length-estimations-using-tailfindR-nano3p-seq-version)
-    - [1.3. Trimming the adapter sequence](#1.3-Trimming-the-adapter-sequence)
-    - [1.4. Mapping](#1.4-Mapping)
-    - [1.5. Extracting soft-clipped region of reads](#1.5-Extracting-soft-clipped-region-of-reads)
+    - [1.1. Base-calling and demultiplexing](#1-1-Base-calling-and-demultiplexing)
+    - [1.2. Tail length estimations using tailfindR nano3p-seq version](#1-2-Tail-length-estimations-using-tailfindR-nano3p-seq-version)
+    - [1.3. Trimming the adapter sequence](#1-3-Trimming-the-adapter-sequence)
+    - [1.4. Mapping](#1-4-Mapping)
+    - [1.5. Extracting soft-clipped region of reads](#1-5-Extracting-soft-clipped-region-of-reads)
 -[Optional filtering steps](#Optional-filtering-steps)
 -[Detailed analyses](#Detailed-analyses)
 - [Software versions used](#Software-versions-used) 
