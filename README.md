@@ -77,7 +77,7 @@ python soft_clipped_content.py trimmed.bam > tail_content.tsv
 ```
 
 
-
+![alt text](./images/Clipping.png "clipping")
 
 
 
