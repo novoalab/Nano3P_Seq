@@ -16,6 +16,8 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 ## General command line steps used to analyze Nano3P-seq datasets
 
 ### 1. Base-calling, demultiplexing and mapping
+Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
+
 
 Base-calling with Guppy v6 without trimming the adapter :
 ```bash
@@ -33,9 +35,6 @@ Demultiplexing the unclassified.fastq file using porechop (Python 3 is required)
 porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --untrimmed 
 ```
 
-
-
-
 Mapping with minimap2:
 ```bash
 # Mapping to transcriptome
@@ -43,12 +42,16 @@ minimap2 -ax map-ont --MD reference.fasta input.fastq | samtools view -hSb -F 38
 samtools view  -f 0x10 -bq 59 output.sam | samtools sort - output.sorted && samtools index output.sorted.bam
 
 # Mapping to genome
-minimap2 -ax splice -k14 -uf --MD $ref input.fastq | samtools view -hSb -F 3844 - >  output.sam
+minimap2 -ax splice -k14 --MD $ref input.fastq | samtools view -hSb -F 3844 - >  output.sam
 samtools sort output.sam output.sorted && rm output.sam && samtools index output.sorted.bam
 
 ```
 
+
+
+
 ### 2. Filtering mapped reads based on annotations and assigning reads to gene biotype
+At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
 
 #### 2.1. Convert the BAM into BED
 ```bash
@@ -286,11 +289,11 @@ Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file 
 
 ## Software versions used
 
-* Guppy version 3.6.1
+* Guppy version 6.0.2
 * minimap2 version 2.17
 * samtools version 0.1.19
 * R version 3.6.0
-* TailfindR v1.2
+* TailfindR (Nano3P-seq version)
 * picard.jar v2.25.0
 * bedtools v2.29.1
 * Isoquant v1.3
@@ -301,4 +304,4 @@ Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file 
 If you find this work useful, please cite: 
 
 
-Begik O, Liu H, Delgado-Tejedor A, Kontur C, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore sequencing. bioRxiv 2021. doi: https://doi.org/10.1101/2021.09.22.461331. 
+Begik O, Diensthuber G, Liu H, Delgado-Tejedor A, Kontur C, Niazi AM, Valen E, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore cDNA sequencing. bioRxiv 2022. doi: https://www.biorxiv.org/content/10.1101/2021.09.22.461331v3. 
