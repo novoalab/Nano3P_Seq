@@ -110,9 +110,82 @@ We will use a mouse sample run as an example
 Refer to this [link](https://github.com/novoalab/Nano3P_Seq/tree/master/executable_R_scripts/annotation_building) for creating bed files from gtf file
 
 
+### Map reads to cytoplasmic ribosomal RNA sequences
+
+```bash
+#Minimap with default options
+minimap2 -ax map-ont --MD -t 2 reference_fasta input_fastq > cytrRNA.bam
+#Convert BAM into SAM, including only high-quality allignment
+samtools view -Sb -F 3844 cytrRNA.bam >  cytrRNA.sam
+#Extract high quality and reverse strand only reads and sort/index
+samtools view -hb -f 0x10 -bq 59 cytrRNA.sam | samtools sort - cytrRNA.sorted && samtools index cytrRNA.sorted.bam
+#Remove intermediate files
+rm cytrRNA.bam  cytrRNA.sam
+```
 
 
-### Convert the BAM into BED
+### Map reads to cytoplasmic ribosomal RNA sequences
+
+```bash
+#Intersect the BAM file reads with rRNA annotation
+bedtools intersect -abam cytrRNA.sorted.bam -b Zebrafish_rRNA_Transcript_Ends.bed -wa -wb -bed > cytrRNA_complete.bed
+#Extract Read IDs
+awk '!seen[$4]++' cytrRNA_complete.bed  | cut -f4 > cytrRNA_complete.reads
+#Extract BAM for complete mapping to rRNA
+java -jar picard.jar FilterSamReads \
+   I=cytrRNA.sorted.bam \
+   O=cytrRNA_complete.sorted.bam\
+   READ_LIST_FILE=cytrRNA_complete.reads \
+   FILTER=includeReadList
+#Index the BAM file
+samtools index cytrRNA_complete.sorted.bam
+#Intersect the BAM file with rRNA Annotation to label the reads as rRNA
+bedtools intersect -abam cytrRNA_complete.sorted.bam -b Zebrafish_rRNA_Annotation.bed -wa -wb -bed -S | awk '!seen[$4]++'>  cytrRNA.overlapping.FINAL.bed
+# Exclude these reads from fastq
+samtools view cytrRNA.sorted.bam | cut -f1 > cytrRNA.reads
+#Excluded fastq
+seqkit grep --pattern-file cytrRNA.reads --invert-match  input_fastq > nonrRNA.fastq
+```
+
+### Map non-rRNA reads to genome
+
+```bash
+#Minimap with default options
+minimap2 -ax splice -k14 --MD -t 2 $ref nonrRNA.fastq  > nonrRNA.bam
+#Convert BAM into SAM, including only high-quality allignment
+samtools view -Sb -F 3844 nonrRNA.bam > nonrRNA.sam
+#Sort BAM file
+samtools view -hb nonrRNA.sam | samtools sort - nonrRNA.sorted && samtools index nonrRNA.sorted.bam
+#Convert BAM into BED
+bedtools bamtobed -i nonrRNA.sorted.bam > nonrRNA.sorted.bed 
+#Remove intermediate files
+rm nonrRNA.bam nonrRNA.sam
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```bash
 # File needed:
 ## BAM mapped to genome and rRNAs and sorted
@@ -120,6 +193,7 @@ Refer to this [link](https://github.com/novoalab/Nano3P_Seq/tree/master/executab
 # Convert BAM to BED
 bedtools bamtobed -i data.bam > data.bed
 ```
+
 
 ### 2.2. Extract Reads starts 
 
@@ -357,6 +431,7 @@ Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file 
 * bedtools v2.29.1
 * Isoquant v1.3
 * porechop v0.2.4
+* seqkit
 * Python version 3
 
 ## Citation

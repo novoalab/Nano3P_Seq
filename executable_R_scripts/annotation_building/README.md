@@ -8,7 +8,7 @@
 Rscript --vanilla exons.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla exons.R Saccer64.gtf yeast
+Rscript --vanilla exons.R zebrafish_chr1.gtf zebrafish
 ```
 
 ## Create a BED file that contains Gene cordinates
@@ -17,7 +17,7 @@ Rscript --vanilla exons.R Saccer64.gtf yeast
 Rscript --vanilla genes.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla genes.R Saccer64.gtf yeast
+Rscript --vanilla genes.R zebrafish_chr1.gtf zebrafish
 ```
 
 ## Create a BED file that contains all transcript end coordinates
@@ -26,7 +26,7 @@ Rscript --vanilla genes.R Saccer64.gtf yeast
 Rscript --vanilla transcript_ends.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla transcript_ends.R Saccer64.gtf yeast
+Rscript --vanilla transcript_ends.R zebrafish_chr1.gtf zebrafish
 ```
 
 
@@ -37,7 +37,7 @@ Rscript --vanilla transcript_ends.R Saccer64.gtf yeast
 Rscript --vanilla mirna_genes.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla mirna_genes.R Saccer64.gtf yeast
+Rscript --vanilla mirna_genes.R zebrafish_chr1.gtf zebrafish
 ```
 
 ## Create a BED file that contains smallRNA gene cordinates
@@ -46,7 +46,7 @@ Rscript --vanilla mirna_genes.R Saccer64.gtf yeast
 Rscript --vanilla smallrna_genes.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla smallrna_genes.R Saccer64.gtf yeast
+Rscript --vanilla smallrna_genes.R zebrafish_chr1.gtf zebrafish
 ```
 
 ## Create a BED file that contains smallRNA transcript end coordinates
@@ -55,6 +55,6 @@ Rscript --vanilla smallrna_genes.R Saccer64.gtf yeast
 Rscript --vanilla smallrna_transcriptends.R <GTF_file> <Label>
 
 #Example
-Rscript --vanilla smallrna_transcriptends.R Saccer64.gtf yeast
+Rscript --vanilla smallrna_transcriptends.R zebrafish_chr1.gtf zebrafish
 ```
 
