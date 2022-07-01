@@ -256,58 +256,6 @@ samtools index allRNAs.bam
 
 
 
-
-## Analyses of the processed data
-
-
-### 5. Post-processing of polyA tail length estimations 
-```bash
-Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv <outputFile.tails.processed.tsv>
-```
-
-### 6. Visualizing the results
-
-#### a) Scatterplots of poly(A) tail length estimations across biological replicates
-```bash
-Rscript --vanilla executable_R_scripts/scatter_tails_replicates.R Rep1.tails Rep2.tails Rep1.bed Rep2.bed label
-```
-#### b) Dotplots of poly(A) tail length estimations across time points 
-```bash
-Rscript --vanilla executable_R_scripts/dotplot_timepoints.R tails 2hpf.bed 4hpf.bed 6hpf.bed
-```
-#### c) Line plots of transcript abundances across time points
-```bash
-Rscript --vanilla executable_R_scripts/line_plot.R tails 2hpf.bed 4hpf.bed 6hpf.bed gene_list.txt
-```
-
-#### d) Getting your poly(A) tail ends to be visible in IGV
-
-```bash
-#Porechop tool to remove the adapter sequences
-porechop -i input.fastq> trimmed.fastq
-
-# Remap the reads to the same reference
-# Load the BAM file into IGV
-# Go to View>Preferences>Alignments>Click on "Show soft-clipped bases"
-# Zoom into the 3'end of the gene
-```
-
-### 7. Analysing the tail-composition
-
-#### a) Extract the soft clipped part of the reads
-```bash
-python soft_clipped_content.py trimmed.bam > tail_content.tsv
-```
-
-#### b) Post-processing the tail content 
-```bash
-Rscript --vanilla executable_R_scripts/process_tailcontent.R tail_file bed_file content_file label
-```
-
-
-
-
-
 ## Software versions used
 
 * Guppy version 6.0.2
