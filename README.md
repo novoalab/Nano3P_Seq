@@ -163,7 +163,7 @@ rm nonrRNA.bam nonrRNA.sam
 ```
 
 
-
+#Assigning compelte reads to Biotypes
 
 ```bash
 #Extract read start coordinates from the BED file
