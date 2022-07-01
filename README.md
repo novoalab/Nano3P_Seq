@@ -124,7 +124,7 @@ rm cytrRNA.bam  cytrRNA.sam
 ```
 
 
-### Map reads to cytoplasmic ribosomal RNA sequences
+### Extract non-rRNA reads
 
 ```bash
 #Intersect the BAM file reads with rRNA annotation
@@ -165,195 +165,93 @@ rm nonrRNA.bam nonrRNA.sam
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```bash
-# File needed:
-## BAM mapped to genome and rRNAs and sorted
-
-# Convert BAM to BED
-bedtools bamtobed -i data.bam > data.bed
-```
-
-
-### 2.2. Extract Reads starts 
-
-```bash
-# File needed : 
-## BED converted from BAM mapped to genome and rRNAs and sorted
-Rscript --vanilla executable_R_scripts/extract_readstarts.R data.bed <outputFile.readstarts.bed>
-```
-
-
-
-### 2.3. Intersect the read starts with Small RNAs transcript ends
-
-```bash
-# File needed :
-## Reads Starts file of the BAM mapped to Genome and rRNAs and sorted
-## BAM Mapped to Genome and rRNAs and sorted
-## A file containing the Transcript Ends of SmallRNAs 
-
-
-bedtools intersect -a data.readstarts.bed -b SmallRNA_TranscriptEnds.bed -wa -wb > data_smallRNAs.bed
-
-
-#Remove duplicate reads and export read IDs
-awk '!seen[$4]++' data_smallRNAs.bed | cut -f4 > data_smallRNAs.reads
-
-
-### EXTRACT THE BAM FOR SMALL RNA READS
-java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=data.bam \
-       O=data.smallRNAs.bam\
-       READ_LIST_FILE=data_smallRNAs.reads \
-       FILTER=includeReadList
-
-#Sort the bam
-samtools sort data.smallRNAs.bam data.smallRNAs.sorted
-#Index the bam
-samtools index data.smallRNAs.sorted.bam
-
-
-
-### EXTRACT THE REST TO INTERSECT AGAIN
-java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=data.bam \
-       O=data.restRNAs.bam\
-       READ_LIST_FILE=data_smallRNAs.reads \
-       FILTER=excludeReadList
-
-#Sort the bam
-samtools sort data.restRNAs.bam data.restRNAs.sorted
-#Index the bam
-samtools index data.restRNAs.sorted.bam
-```
-
-
-### 2.4. Convert the BAM into BED 
-
-```bash
-bedtools bamtobed -i data.restRNAs.sorted.bam > data.restRNAs.sorted.bed
-```
-
-### 2.5. Extract Reads starts of the Rest Reads (non-smallRNA reads)
-
-```bash
-# File needed : 
-## BED converted from BAM mapped to genome and rRNAs and sorted
-
-Rscript --vanilla executable_R_scripts/extract_readstarts.R data.restRNAs.sorted.bed <outputFile.readstarts.bed>
-
-```
-
-
-
-### 2.6. Intersect Read Starts with Transcript Ends for the Rest RNAs (non-smallRNA reads)
-```bash
-# File needed :
-## Reads Starts file of the BAM mapped to Genome and rRNAs and sorted (Rest RNAs)
-## BAM Mapped to Genome and rRNAs and sorted
-## A file containing the Transcript Ends of All RNAs 
-
-
-bedtools intersect -a data.restRNAs.readstarts.bed -b All_TranscriptEnds.bed -wa -wb > data.restRNAs.complete.bed
-
-
-
-#Remove duplicate reads and extract Read IDs
-awk '!seen[$4]++' data.restRNAs.complete.bed | cut -f4 > data.restRNAs.complete.reads
-
-
-### EXTRACT THE BAM FOR Rest Complete Reads
-java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=data.bam \
-       O=data.restRNAs.complete.bam\
-       READ_LIST_FILE=data.restRNAs.complete.reads \
-       FILTER=includeReadList
-
-#Sort the BAM file
-samtools sort data.restRNAs.complete.bam data.restRNAs.complete.sorted
-#Index the BAM file
-samtools index data.restRNAs.complete.sorted.bam
-
+#Extract read start coordinates from the BED file
+Rscript --vanilla readstarts.R nonrRNA.sorted.bed nonrRNA
+#Intersect reads with miRNA Gene annotation to first take miRNA reads apart from the rest
+bedtools intersect -abam nonrRNA.sorted.bam -b miRNA_Gene.bed -wa -wb -bed -split -S > miRNAs.bed
+#Extract read IDs
+awk '!seen[$4]++' miRNAs.bed | cut -f4 > miRNAs.reads
+#Intersect read start coordinates with small RNA transcript end coordinates
+bedtools intersect -a nonrRNA_readstarts.bed -b SmallRNA_TranscriptEnds.bed -wa -wb > smallRNAs.bed
+#Exrtract read IDs
+awk '!seen[$4]++' smallRNAs.bed | cut -f4 > smallRNAs.reads
+#Make a BAM file for reads mapping to small RNAs
+java -jar picard.jar FilterSamReads \
+     I=nonrRNA.sorted.bam \
+     O=smallRNAs.bam\
+     READ_LIST_FILE=smallRNAs.reads \
+     FILTER=includeReadList
+#Index the BAM file     
+samtools index smallRNAs.bam
+#Make a BAM file for reads not mapping to small RNAs
+java -jar picard.jar FilterSamReads \
+     I=nonrRNA.sorted.bam \
+     O=longRNAs.bam\
+     READ_LIST_FILE=smallRNAs.reads\
+     FILTER=excludeReadList
+#Index the BAM file     
+samtools index longRNAs.bam
 #Convert BAM to BED
-bedtools bamtobed -i data.restRNAs.complete.sorted.bam > data.restRNAs.complete.sorted.bed
-
-#Remove duplicate reads and extract Read IDs
-awk '!seen[$4]++' data.restRNAs.complete.sorted.bed | cut -f4 > data.restRNAs.complete.sorted.reads
-
-```
-
-
-### 2.7. Create the BAM file for the miRNAs
-```bash
-#Files needed
-## miRNA Gene BED file extracted from annotation file
-## BAM mapped to genome and rRNAs and sorted
-## Read ID file from the restRNAs (non-smallRNAs)
-## Read ID file from the small RNAs
-
-
-# Intersect BED with miRNA Genes BED
-bedtools intersect -abam data.bam -b miRNA_Gene.bed -wa -wb -bed -split -S > data.miRNAs.bed
-
-# Remove duplicate reads and extract read IDs
-awk '!seen[$4]++' data.miRNAs.bed | cut -f4 > data.miRNAs.reads
-
-# Remove the reads from miRNAs that are overlapping with restRNAs and smallRNAs
-diff data.restRNAs.complete.sorted.reads data.miRNAs.reads |grep ">"|cut -c 3- > data.miRNAs.RestExcluded.reads
-
-
-diff data_smallRNAs.reads data.miRNAs.RestExcluded.reads |grep ">"|cut -c 3- > data.miRNAs.RestandSmallExcluded.reads
-
-
-# Now we processed the miRNA reads file, exluding overlaps with genes
-#cDNA964321_all.genome38_sequin_overlapping_miRNAs_RestSmallExcluded.reads
-
+bedtools bamtobed -i longRNAs.bam > longRNAs.bed
+#Extract read starts from BAM file
+Rscript --vanilla readstarts.R longRNAs.bed longRNAs
+#Intersect read start coordinates with long RNA transcript end coordinates
+bedtools intersect -a longRNAs.readstarts.bed -b Transcript_Ends.bed -wa -wb > longRNAs.overlapping.bed
+#Extract read IDs
+awk '!seen[$4]++' longRNAs.overlapping.bed | cut -f4 > longRNAs.overlapping.reads
+#Make a BAM file for reads mapping to long RNAs
+java -jar picard.jar FilterSamReads \
+     I=nonrRNA.sorted.bam \
+     O=longRNAs.overlapping.bam\
+     READ_LIST_FILE=longRNAs.overlapping.reads \
+     FILTER=includeReadList
+#Index BAM file
+samtools index longRNAs.overlapping.bam
+# We need to remove the reads from miRNAs that are overlapping with smallRNAs or restRNAs
+diff longRNAs.overlapping.reads miRNAs.reads |grep ">"|cut -c 3- > miRNAs.longexcluded.reads
+diff smallRNAs.reads miRNAs.longexcluded.reads |grep ">"|cut -c 3- > miRNAs.longsmallexcluded.reads
+#Extract filtered miRNA BAM file
+java -jar picard.jar FilterSamReads \
+     I=sorted.bam \
+     O=miRNAFINAL.bam\
+     READ_LIST_FILE=miRNAs.longsmallexcluded.reads\
+     FILTER=includeReadList
+#Index BAM file
+samtools index miRNAFINAL.bam
+#Assigning Read IDs to Biotypes
+bedtools intersect -abam longRNAs.overlapping.bam -b Rest_EXON.bed -wa -wb -bed -split -S | awk '!seen[$4]++'> longRNAs.overlapping.FINAL.bed
+#Assigning Read IDs to Biotypes
+bedtools intersect -abam smallRNAs.bam -b SmallRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > smallRNAs.overlapping.FINAL.bed
+#Assigning Read IDs to Biotypes
+bedtools intersect -abam miRNAFINAL.bam -b miRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > miRNAs.FINAL.bed
+#Merge all the fgiles
+cat  cytrRNA_complete.bed longRNAs.overlapping.FINAL.bed smallRNAs.overlapping.FINAL.bed miRNAs.FINAL.bed > allRNAs.bed
+#Exreact Read IDs
+awk '!seen[$4]++' allRNAs.bed | cut -f4 > allRNAs.reads
+#Create BAM file for nonrRNA FINAL version
 java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
-       I=data.bam \
-       O=data.miRNAs.bam\
-       READ_LIST_FILE=data.miRNAs.RestandSmallExcluded.reads\
-       FILTER=includeReadList
-
-samtools sort data.miRNAs.bam data.miRNAs.sorted
-samtools index data.miRNAs.sorted.bam
+     I=nonrRNA.sorted.bam \
+     O=nonrRNA.FINAL.bam\
+     READ_LIST_FILE=allRNAs.reads\
+     FILTER=includeReadList
+#Merge nonrRNA and cyt rRNA reads
+samtools merge allRNAs.bam nonrRNA.FINAL.bam cytrRNA_complete.sorted.bam
+#Index BAM file
+samtools index allRNAs.bam
 ```
 
-### 2.8. Merge all the BED files with their annotations
 
-```bash
 
-#Intersect BAM file of Rest RNAs (non-smallRNAs) with the Rest Exon Annotation BED File
-bedtools intersect -abam data.restRNAs.complete.sorted.bam -b Rest_EXON.bed -wa -wb -bed -split -S | awk '!seen[$4]++'>  data.restRNAs_FINAL.bed
 
-#Intersect BAM file of Small RNAs with the Small RNA Gene Annotation BED File
-bedtools intersect -abam data.smallRNAs.sorted.bam -b SmallRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > data.smallRNAs_FINAL.bed
 
-#Intersect BAM file of miRNAs with the miRNA Gene Annotation BED File
-bedtools intersect -abam data.miRNAs.sorted.bam -b miRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > data.miRNAs_FINAL.bed
 
-cat  data.restRNAs_FINAL.bed data.smallRNAs_FINAL.bed data.miRNAs_FINAL.bed > data.allRNAs.bed
-```
+
+
+
+
+
+
 
 
 
