@@ -13,8 +13,8 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
     - [Trimming the adapter sequence](#Trimming-the-adapter-sequence)
     - [Mapping](#Mapping)
     - [Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
--[Optional filtering steps](#Optional-filtering-steps)
--[Detailed analyses](#Detailed-analyses)
+-[Detailed steps](#Detailed-steps)
+-[Analyses of the processed data](#Analyses-of-the-processed-data)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
@@ -98,9 +98,21 @@ python soft_clipped_content.py trimmed.bam > tail_content.tsv
 
 
 
+### Assigning reads to transcripts/isoforms
+```bash
+#Prerequisite : isoquant.py tool
+python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_type nanopore -o OUTPUT_FOLDER
+```
 
 
-## Optional filtering steps 
+
+
+
+
+
+
+## Detailed steps 
+
 Filtering mapped reads based on annotations and assigning reads to gene biotype 
 At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
 We will use a mouse sample run as an example
@@ -245,31 +257,9 @@ samtools index allRNAs.bam
 
 
 
+## Analyses of the processed data
 
 
-
-
-
-
-
-
-
-
-### 3. Assigning reads to transcripts/isoforms
-```bash
-#Prerequisite : isoquant.py tool
-python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_type nanopore -o OUTPUT_FOLDER
-```
-
-### 4. Per-read poly(A) tail length estimations
-```R
-#Prerequisite : tailfindR tool
-tails <- find_tails(fast5_dir ='fast5_location',
-save_dir = './',
-csv_filename = 'Tails.csv' ,
-num_cores = 10)
-
-```
 ### 5. Post-processing of polyA tail length estimations 
 ```bash
 Rscript --vanilla executable_R_scripts/process_tail.R Tails.csv <outputFile.tails.processed.tsv>
