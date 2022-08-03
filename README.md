@@ -85,7 +85,7 @@ Furthermore, we followed a pipelime comprised of customised scripts in order to 
   -  Correctly assign the reads to distinct biotypes 
 
 
-You can check out [this](#Optional-filtering-steps ) section for the detailed pipeline
+You can check out [this](#Detailed-mapping-steps) section for the detailed pipeline
 
 
 
