@@ -1,5 +1,5 @@
 
-# Creating BED files from GTF annotation file for detailed analyses 
+# Creating BED files from GTF annotation file for Nano3p-seq analyses 
 
 
 ## Create a BED file that contains Exon cordinates
