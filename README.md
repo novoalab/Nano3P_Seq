@@ -13,8 +13,8 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
     - [Trimming the adapter sequence](#Trimming-the-adapter-sequence)
     - [Mapping](#Mapping)
     - [Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
--[Detailed steps](#Detailed-steps)
--[Analyses of the processed data](#Analyses-of-the-processed-data)
+- [Detailed steps](#Detailed-steps)
+- [Analyses of the processed data](#Analyses-of-the-processed-data)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
