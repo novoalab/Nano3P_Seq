@@ -8,11 +8,11 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-    - [1.Base-calling and demultiplexing](#Base-calling-and-demultiplexing)
-    - [2.Tail length estimations using tailfindR nano3p-seq version](#Tail-length-estimations-using-tailfindR-nano3p-seq-version)
-    - [3.Trimming the adapter sequence](#Trimming-the-adapter-sequence)
-    - [4.Mapping](#Mapping)
-    - [5.Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
+    - [1.Base-calling and demultiplexing](#1.Base-calling-and-demultiplexing)
+    - [2.Tail length estimations using tailfindR nano3p-seq version](#2.Tail-length-estimations-using-tailfindR-nano3p-seq-version)
+    - [3.Trimming the adapter sequence](#3.Trimming-the-adapter-sequence)
+    - [4.Mapping](#4.Mapping)
+    - [5.Extracting soft-clipped region of reads](#5.Extracting-soft-clipped-region-of-reads)
 - [Detailed mapping steps](#Detailed-mapping-steps)
     - [Create new annotation files](#Create-new-annotation-files)
     - [Map reads to cytoplasmic ribosomal RNA sequences](#Map-reads-to-cytoplasmic-ribosomal-RNA-sequences)
@@ -22,7 +22,7 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## General steps used to analyze Nano3P-seq datasets
 
-### Base-calling and demultiplexing
+### 1.Base-calling and demultiplexing
 
 Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
 
@@ -44,7 +44,7 @@ porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --u
 ```
 
 
-### Tail length estimations using tailfindR nano3p-seq version
+### 2.Tail length estimations using tailfindR nano3p-seq version
 You can download nano3p-seq version of tailfindr [here](https://github.com/adnaniazi/tailfindr/tree/nano3p-seq)
 ```R
 #Prerequisite : tailfindR tool nano3p-seq version
@@ -55,7 +55,7 @@ num_cores = 10)
 ```
 
 
-### Trimming the adapter sequence
+### 3.Trimming the adapter sequence
 We need to trim the adapter sequence before analysing the tail content
 In order to do so, we need to create an alternative adapters.py file that ONLY contains Nano3p-seq adapter. 
 This way we can make the search with less stringency and get a cleaner trimming
@@ -66,7 +66,7 @@ porechop --extra_end_trim 0 --end_threshold 40 --adapter_threshold 40 -i input.f
 ```
 
 
-### Mapping
+### 4.Mapping
 General mapping options used in our pipeline
 
 ```bash
@@ -89,7 +89,7 @@ You can check out [this](#Optional-filtering-steps ) section for the detailed pi
 
 
 
-### Extracting soft-clipped region of reads
+### 5.Extracting soft-clipped region of reads
 We extract this information for the tail content analysis. It should contain the unmapped tail region of the reads
 ```bash
 python soft_clipped_content.py trimmed.bam > tail_content.tsv
