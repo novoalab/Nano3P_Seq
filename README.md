@@ -253,7 +253,31 @@ samtools merge allRNAs.bam nonrRNA.FINAL.bam cytrRNA_complete.sorted.bam
 samtools index allRNAs.bam
 ```
 
+## Reference sequences used
 
+* Curlcake sequences : 
+    * curlcake_1_2.fasta
+* cDNA Standards : 
+    * cdna_std.fasta
+* Sequins : 
+    * Genome : chrIS.v2.fa
+    * Genome annotation : RNAsequins.v2.2.gtf
+* Yeast : 
+    * Genome : SacCer3.fa
+    * Ribosomal RNA : yeast_rRNA.fa
+    * Genome annotation : Saccer64.gtf
+* Mouse : 
+    * [Genome](http://ftp.ensembl.org/pub/release-107/fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna_sm.primary_assembly.fa.gz)
+    * Ribosomal RNA : mus_musculus_rRNA.fasta
+    * [Genome annotation](http://ftp.ensembl.org/pub/release-107/gtf/mus_musculus/Mus_musculus.GRCm39.107.gtf.gz)
+* Zebrafish : 
+    * [Genome](http://ftp.ensembl.org/pub/release-107/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna_sm.primary_assembly.fa.gz)
+    * Ribosomal RNA : Zebrafish_rRNA_Maternal_Zygotic.fa
+    * [Genome annotation](http://ftp.ensembl.org/pub/release-107/gtf/danio_rerio/Danio_rerio.GRCz11.107.gtf.gz)
+* Human : 
+    * [Genome](http://ftp.ensembl.org/pub/release-107/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz)
+    * Ribosomal RNA : human_rRNAs.fa
+    * [Genome annotation](http://ftp.ensembl.org/pub/release-107/gtf/homo_sapiens/Homo_sapiens.GRCh38.107.gtf.gz)
 
 
 ## Software versions used
