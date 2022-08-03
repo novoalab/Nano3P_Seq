@@ -8,13 +8,15 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
-    - [Base-calling and demultiplexing](#Base-calling-and-demultiplexing)
-    - [Tail length estimations using tailfindR nano3p-seq version](#Tail-length-estimations-using-tailfindR-nano3p-seq-version)
-    - [Trimming the adapter sequence](#Trimming-the-adapter-sequence)
-    - [Mapping](#Mapping)
-    - [Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
-- [Detailed steps](#Detailed-steps)
-- [Analyses of the processed data](#Analyses-of-the-processed-data)
+    - [1.Base-calling and demultiplexing](#Base-calling-and-demultiplexing)
+    - [2.Tail length estimations using tailfindR nano3p-seq version](#Tail-length-estimations-using-tailfindR-nano3p-seq-version)
+    - [3.Trimming the adapter sequence](#Trimming-the-adapter-sequence)
+    - [4.Mapping](#Mapping)
+    - [5.Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
+- [Detailed mapping steps](#Detailed-mapping-steps)
+    - [Create new annotation files](#Create-new-annotation-files)
+    - [Map reads to cytoplasmic ribosomal RNA sequences](#Map-reads-to-cytoplasmic-ribosomal-RNA-sequences)
+    - [Map non-rRNA reads to genome](#Map-non-rRNA-reads-to-genome)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
@@ -105,13 +107,7 @@ python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_typ
 ```
 
 
-
-
-
-
-
-
-## Detailed steps 
+## Detailed mapping steps 
 
 Filtering mapped reads based on annotations and assigning reads to gene biotype 
 At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
