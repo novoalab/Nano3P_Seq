@@ -13,8 +13,10 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
     - [Trimming the adapter sequence](#Trimming-the-adapter-sequence)
     - [Mapping](#Mapping)
     - [Extracting soft-clipped region of reads](#Extracting-soft-clipped-region-of-reads)
--[Detailed steps](#Detailed-steps)
--[Analyses of the processed data](#Analyses-of-the-processed-data)
+- [Detailed mapping steps](#Detailed-mapping-steps)
+    - [Create new annotation files](#Create-new-annotation-files)
+    - [Map reads to cytoplasmic ribosomal RNA sequences](#Map-reads-to-cytoplasmic-ribosomal-RNA-sequences)
+    - [Map non-rRNA reads to genome](#Map-non-rRNA-reads-to-genome)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
 
@@ -83,7 +85,7 @@ Furthermore, we followed a pipelime comprised of customised scripts in order to 
   -  Correctly assign the reads to distinct biotypes 
 
 
-You can check out [this](#Optional-filtering-steps ) section for the detailed pipeline
+You can check out [this](#Detailed-mapping-steps) section for the detailed pipeline
 
 
 
@@ -105,13 +107,7 @@ python isoquant.py --genedb gtf_file --complete_genedb --bam data.bam --data_typ
 ```
 
 
-
-
-
-
-
-
-## Detailed steps 
+## Detailed mapping steps 
 
 Filtering mapped reads based on annotations and assigning reads to gene biotype 
 At this step, using the annotation, we aim to remove the reads coming from degraded RNAs 
@@ -119,7 +115,7 @@ We will use a mouse sample run as an example
 
 ### Create new annotation files
 
-Refer to this [link](https://github.com/novoalab/Nano3P_Seq/tree/master/executable_R_scripts/annotation_building) for creating bed files from gtf file
+Refer to this [link](https://github.com/novoalab/Nano3P_Seq/tree/master/R_scripts/annotation_building) for creating bed files from gtf file
 
 
 ### Map reads to cytoplasmic ribosomal RNA sequences
