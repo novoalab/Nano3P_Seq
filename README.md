@@ -171,7 +171,7 @@ rm nonrRNA.bam nonrRNA.sam
 ```
 
 
-#Assigning compelte reads to Biotypes
+#Assigning complete reads to Biotypes
 
 ```bash
 #Extract read start coordinates from the BED file
@@ -233,9 +233,9 @@ bedtools intersect -abam longRNAs.overlapping.bam -b Rest_EXON.bed -wa -wb -bed 
 bedtools intersect -abam smallRNAs.bam -b SmallRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > smallRNAs.overlapping.FINAL.bed
 #Assigning Read IDs to Biotypes
 bedtools intersect -abam miRNAFINAL.bam -b miRNA_Gene.bed -wa -wb -bed -split -S | awk '!seen[$4]++' > miRNAs.FINAL.bed
-#Merge all the fgiles
+#Merge all the files
 cat  cytrRNA_complete.bed longRNAs.overlapping.FINAL.bed smallRNAs.overlapping.FINAL.bed miRNAs.FINAL.bed > allRNAs.bed
-#Exreact Read IDs
+#Exract Read IDs
 awk '!seen[$4]++' allRNAs.bed | cut -f4 > allRNAs.reads
 #Create BAM file for nonrRNA FINAL version
 java -jar /users/enovoa/boguzhan/Software/picard/build/libs/picard.jar FilterSamReads \
@@ -248,6 +248,22 @@ samtools merge allRNAs.bam nonrRNA.FINAL.bam cytrRNA_complete.sorted.bam
 #Index BAM file
 samtools index allRNAs.bam
 ```
+
+
+
+# Creating plots
+
+R script for timepoint dot plots
+
+```R
+Rscript dotplot_timepoints.R <tailfindR.file> <bedfile1> <bedfile2> <bedfile3> label
+
+#Example 
+Rscript dotplot_timepoints.R zebrafish_tailfindr.csv 2hpf.bed 4hpf.bed 6hpf.bed zebrafish
+
+```
+
+
 
 ## Reference sequences used
 
