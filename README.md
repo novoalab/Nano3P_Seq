@@ -54,14 +54,13 @@ csv_filename = 'Tails.csv' ,
 num_cores = 10)
 ```
 
-* Interpretation of the results: 
-For each read, Tailfindr will report as output numerical integers corresponding to the tail length in nt (e.g. 120), 0 or NaN. 
+Note: For each read, Tailfindr will report as output numerical integers corresponding to the tail length in nt (e.g. 120), 0 or NaN. 
 
 Length = 0 ---> when the status of the read is: ```contains_no_polyT_tail```
 
 Length = NaN ---> when the status of the read is: ```no_adaptor_found```
 
-Therefore, tail length equal to 0 means that the software could find the adapter, but next to it, it did not find any polyA tail stretch (so length is reported as 0 nt), whereas NaN means that the read could not be analyzed because the adapter was not found. Length = 0 should be considered as deadenylated reads, and should not be discarded from the downstream analyses. 
+Therefore, tail length equal to 0 means that the software could find the adapter, but next to it, it did not find any polyA tail stretch (so length is 0 nt), whereas NaN means that the read could not be analyzed because the adapter was not found. 
 
 ### Trimming the adapter sequence
 We need to trim the adapter sequence before analysing the tail content
