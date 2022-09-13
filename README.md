@@ -274,6 +274,8 @@ Rscript dotplot_timepoints.R zebrafish_tailfindr.csv 2hpf.bed 4hpf.bed 6hpf.bed 
 
 ## Reference sequences used
 
+You can find them in the [reference](https://github.com/novoalab/Nano3P_Seq/tree/master/references) folder 
+
 * Curlcake sequences : 
     * curlcake_1_2.fasta
 * cDNA Standards : 
