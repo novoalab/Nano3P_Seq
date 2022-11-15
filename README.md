@@ -19,6 +19,7 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
     - [Map non-rRNA reads to genome](#Map-non-rRNA-reads-to-genome)
 - [Software versions used](#Software-versions-used) 
 - [Citation](#Citation) 
+- [Issues](#Issues)
 
 ## General steps used to analyze Nano3P-seq datasets
 
@@ -320,3 +321,6 @@ If you find this work useful, please cite:
 
 
 Begik O, Diensthuber G, Liu H, Delgado-Tejedor A, Kontur C, Niazi AM, Valen E, Giraldez AJ, Beaudoin JD, Mattick JS and Novoa EM. Nano3P-seq: transcriptome-wide analysis of gene expression and tail dynamics using end-capture nanopore cDNA sequencing. bioRxiv 2022. doi:https://www.biorxiv.org/content/10.1101/2021.09.22.461331v3. 
+
+## Issues
+If you have any issues/doubts when using this code, please check previous [Issues](https://github.com/novoalab/Nano3P_Seq/issues). If you still don't find the answer to your question, please open a new [Issue](https://github.com/novoalab/Nano3P_Seq/issues). Thanks!
