@@ -44,6 +44,15 @@ Demultiplexing the unclassified.fastq file using porechop (Python 3 is required)
 porechop -i unclassified.fastq -b output_folder -t 10 --barcode_threshold 50 --untrimmed 
 ```
 
+OR 
+
+Demultiplexing the unclassified.fastq file using readducks
+
+* If you use MinKNOW version 22 and later with short read capture (i.e. >20nt), please use the following demultiplexing command instead of porechop. 
+```bash
+readducks 
+```
+
 
 ### Tail length estimations using tailfindR nano3p-seq version
 You can download nano3p-seq version of tailfindr [here](https://github.com/adnaniazi/tailfindr/tree/nano3p-seq)
