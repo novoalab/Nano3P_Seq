@@ -55,7 +55,7 @@ readducks
 
 
 ### Tail length estimations using tailfindR nano3p-seq version
-tailfindr Nano3P-seq version can be found as a docker file [here] (https://hub.docker.com/r/adnaniazi/tailfindr_nano3p-seq)
+tailfindr Nano3P-seq version can be found as a docker file [here](https://hub.docker.com/r/adnaniazi/tailfindr_nano3p-seq)
 
 You can download nano3p-seq version of tailfindr [here](https://github.com/adnaniazi/tailfindr/tree/nano3p-seq)
 ```R
