@@ -25,6 +25,8 @@ If you would like to use Nano3p-seq with the current R10.4 chemistry, please tak
 
 ## General steps used to analyze Nano3P-seq datasets
 
+Below are shown instructions to analyze Nano3P-seq datasets sequenced with R9.4 flowcells, as described in [Begik Nat Methods 2022](https://www.nature.com/articles/s41592-022-01714-w)
+
 ### Base-calling and demultiplexing
 
 Basecalling is done using Guppy basecaller without adapter trimming. We need the adapter sequence for the tailfindR software. 
