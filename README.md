@@ -4,9 +4,9 @@ Bioinformatic analysis of Nano3P-seq nanopore libraries (direct cDNA first stran
 
 ![alt text](./images/overall.png "overall")
 
-## Update!
+## Update!!!
 Please note, R9.4 chemistry is now deprecated. 
-If you would like to use Nan3p-seq with the current R10.4 chemistry, please take a look a the following [preprint](https://www.biorxiv.org/content/10.1101/2024.11.20.624491v2) and use [polyTailor](https://github.com/novoalab/polyTailor) for your tail length & composition analysis. Thanks! 
+If you would like to use Nano3p-seq with the current R10.4 chemistry, please take a look at the updated protocol [Begik et al., Nat Protocols 2025](https://www.nature.com/articles/s41596-025-01205-0)) and use [polyTailor](https://github.com/novoalab/polyTailor) for your tail length & composition analysis. Thanks! 
 
 ## Table of Contents
 - [General command line steps used to analyze Nano3P-seq datasets](#General-command-line-steps-used-to-analyze-Nano3P-seq-datasets)
